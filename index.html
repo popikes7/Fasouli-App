@@ -1,15 +1,426 @@
 <!DOCTYPE html>
 <html lang="en">
-    <link rel="apple-touch-icon" href="icon.png">
+      <link rel="apple-touch-icon" href="icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Fasouli">
-
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Fasouli - to Fasouli gemizei to sakouli</title>
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            color: #333;
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        .tagline {
+            color: #666;
+            font-size: 0.95em;
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+
+        .month-selector {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 15px 10px;
+            background: #f9fafb;
+            border-radius: 15px;
+            flex-wrap: wrap;
+        }
+
+        .month-selector h2 {
+            color: #333;
+            font-size: 1em;
+            font-weight: 600;
+            text-align: center;
+            flex: 1 1 100%;
+            order: 1;
+            margin: 8px 0;
+        }
+
+        .month-btn {
+            padding: 12px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.2em;
+            font-weight: bold;
+            order: 0;
+            flex: 0 0 auto;
+        }
+
+        .btn-current {
+            padding: 10px 15px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9em;
+            order: 2;
+            flex: 1 1 100%;
+            margin-top: 8px;
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h3 {
+            color: #666;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .card .amount {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .income-card {
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+        }
+
+        .income-card .amount {
+            color: #059669;
+        }
+
+        .expense-card {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        .expense-card .amount {
+            color: #dc2626;
+        }
+
+        .profit-card {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        }
+
+        .profit-card .amount {
+            color: #7c3aed;
+        }
+
+        .profit-card .amount.positive {
+            color: #059669;
+        }
+
+        .profit-card .amount.negative {
+            color: #dc2626;
+        }
+
+        .tab-navigation {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px 10px;
+            background: #e5e7eb;
+            color: #555;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .tab-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .form-container {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .tab-content h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            color: #555;
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .btn-add {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .recurring-container {
+            background: #fef3c7;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border: 2px solid #fbbf24;
+        }
+
+        .recurring-container h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .recurring-list,
+        .transactions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .recurring-item,
+        .transaction-item {
+            padding: 15px;
+            background: white;
+            border-left: 4px solid;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .recurring-item.income,
+        .transaction-item.income {
+            border-left-color: #059669;
+            background: #f0fdf4;
+        }
+
+        .recurring-item.expense,
+        .transaction-item.expense {
+            border-left-color: #dc2626;
+            background: #fef2f2;
+        }
+
+        .recurring-description,
+        .transaction-description {
+            font-weight: 600;
+            color: #333;
+            font-size: 1.05em;
+            margin-bottom: 8px;
+        }
+
+        .recurring-details,
+        .transaction-details {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .recurring-category,
+        .transaction-category {
+            background: #e5e7eb;
+            padding: 3px 10px;
+            border-radius: 12px;
+            display: inline-block;
+            width: fit-content;
+        }
+
+        .recurring-frequency {
+            background: #dbeafe;
+            padding: 3px 10px;
+            border-radius: 12px;
+            color: #1e40af;
+            display: inline-block;
+            width: fit-content;
+        }
+
+        .recurring-badge {
+            display: inline-block;
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.75em;
+            margin-left: 8px;
+        }
+
+        .recurring-amount-container,
+        .transaction-amount-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .recurring-amount,
+        .transaction-amount {
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        .recurring-amount.income,
+        .transaction-amount.income {
+            color: #059669;
+        }
+
+        .recurring-amount.expense,
+        .transaction-amount.expense {
+            color: #dc2626;
+        }
+
+        .btn-delete {
+            padding: 8px 15px;
+            background: #dc2626;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85em;
+        }
+
+        .transactions-container {
+            margin-top: 20px;
+        }
+
+        .transactions-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .transactions-header h2 {
+            color: #333;
+            font-size: 1.3em;
+        }
+
+        .btn-clear {
+            padding: 8px 15px;
+            background: #dc2626;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85em;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .filter-btn {
+            flex: 1;
+            padding: 10px;
+            background: #e5e7eb;
+            color: #555;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #9ca3af;
+            font-size: 1em;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -18,15 +429,13 @@
             <p class="tagline">to Fasouli gemizei to sakouli</p>
         </header>
 
-        <!-- Month Selector -->
         <div class="month-selector">
             <button id="prevMonth" class="month-btn">◀</button>
-            <h2 id="currentMonth"></h2>
             <button id="nextMonth" class="month-btn">▶</button>
+            <h2 id="currentMonth">Loading...</h2>
             <button id="currentMonthBtn" class="btn-current">Current Month</button>
         </div>
 
-        <!-- Summary Cards -->
         <div class="summary-cards">
             <div class="card income-card">
                 <h3>Total Income</h3>
@@ -42,13 +451,11 @@
             </div>
         </div>
 
-        <!-- Tab Navigation -->
         <div class="tab-navigation">
-            <button class="tab-btn active" data-tab="one-time">One-Time Transaction</button>
-            <button class="tab-btn" data-tab="recurring">Recurring Transaction</button>
+            <button class="tab-btn active" data-tab="one-time">One-Time</button>
+            <button class="tab-btn" data-tab="recurring">Recurring (Πάγια)</button>
         </div>
 
-        <!-- Add Transaction Form -->
         <div class="form-container">
             <form id="transactionForm" class="tab-content active" data-tab="one-time">
                 <h2>Add One-Time Transaction</h2>
@@ -59,17 +466,14 @@
                         <option value="expense">Expense</option>
                     </select>
                 </div>
-                
                 <div class="form-group">
                     <label for="description">Description:</label>
                     <input type="text" id="description" placeholder="e.g., Salary, Groceries" required>
                 </div>
-                
                 <div class="form-group">
                     <label for="amount">Amount:</label>
                     <input type="number" id="amount" step="0.01" placeholder="0.00" required>
                 </div>
-                
                 <div class="form-group">
                     <label for="category">Category:</label>
                     <select id="category" required>
@@ -98,18 +502,15 @@
                         </optgroup>
                     </select>
                 </div>
-                
                 <div class="form-group">
                     <label for="date">Date:</label>
                     <input type="date" id="date" required>
                 </div>
-                
                 <button type="submit" class="btn-add">Add Transaction</button>
             </form>
 
-            <!-- Recurring Transaction Form -->
             <form id="recurringForm" class="tab-content" data-tab="recurring">
-                <h2>Add Recurring Transaction (Πάγια)</h2>
+                <h2>Add Recurring (Πάγια)</h2>
                 <div class="form-group">
                     <label for="recurringType">Type:</label>
                     <select id="recurringType" required>
@@ -117,17 +518,14 @@
                         <option value="expense">Expense</option>
                     </select>
                 </div>
-                
                 <div class="form-group">
                     <label for="recurringDescription">Description:</label>
-                    <input type="text" id="recurringDescription" placeholder="e.g., Monthly Rent, Salary" required>
+                    <input type="text" id="recurringDescription" placeholder="e.g., Monthly Rent" required>
                 </div>
-                
                 <div class="form-group">
                     <label for="recurringAmount">Amount:</label>
                     <input type="number" id="recurringAmount" step="0.01" placeholder="0.00" required>
                 </div>
-                
                 <div class="form-group">
                     <label for="recurringCategory">Category:</label>
                     <select id="recurringCategory" required>
@@ -156,7 +554,6 @@
                         </optgroup>
                     </select>
                 </div>
-                
                 <div class="form-group">
                     <label for="recurringFrequency">Frequency:</label>
                     <select id="recurringFrequency" required>
@@ -165,28 +562,22 @@
                         <option value="yearly">Yearly</option>
                     </select>
                 </div>
-                
                 <div class="form-group">
                     <label for="recurringStartDate">Start Date:</label>
                     <input type="date" id="recurringStartDate" required>
                 </div>
-                
-                <button type="submit" class="btn-add">Add Recurring Transaction</button>
+                <button type="submit" class="btn-add">Add Recurring</button>
             </form>
         </div>
 
-        <!-- Recurring Transactions List -->
         <div class="recurring-container">
-            <h2>Active Recurring Transactions (Πάγια)</h2>
-            <div id="recurringList" class="recurring-list">
-                <!-- Recurring transactions will be added here -->
-            </div>
+            <h2>Active Recurring (Πάγια)</h2>
+            <div id="recurringList" class="recurring-list"></div>
         </div>
 
-        <!-- Transactions List -->
         <div class="transactions-container">
             <div class="transactions-header">
-                <h2>Transaction History</h2>
+                <h2>History</h2>
                 <button id="clearAll" class="btn-clear">Clear All</button>
             </div>
             <div class="filter-buttons">
@@ -194,13 +585,415 @@
                 <button class="filter-btn" data-filter="income">Income</button>
                 <button class="filter-btn" data-filter="expense">Expenses</button>
             </div>
-            <div id="transactionsList" class="transactions-list">
-                <!-- Transactions will be added here dynamically -->
-            </div>
+            <div id="transactionsList" class="transactions-list"></div>
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        // Global variables
+        var transactions = [];
+        var recurringTransactions = [];
+        var currentFilter = 'all';
+        var selectedMonth = new Date();
+        selectedMonth.setDate(1);
+
+        // Load from localStorage
+        try {
+            var stored = localStorage.getItem('transactions');
+            if (stored) transactions = JSON.parse(stored);
+        } catch (e) {
+            console.error('Error loading transactions:', e);
+        }
+
+        try {
+            var storedRecurring = localStorage.getItem('recurringTransactions');
+            if (storedRecurring) recurringTransactions = JSON.parse(storedRecurring);
+        } catch (e) {
+            console.error('Error loading recurring transactions:', e);
+        }
+
+        // Helper function to format date for input
+        function formatDateForInput(date) {
+            var d = new Date(date);
+            var month = '' + (d.getMonth() + 1);
+            var day = '' + d.getDate();
+            var year = d.getFullYear();
+
+            if (month.length < 2) month = '0' + month;
+            if (day.length < 2) day = '0' + day;
+
+            return [year, month, day].join('-');
+        }
+
+        // Set today's date
+        document.getElementById('date').value = formatDateForInput(new Date());
+        document.getElementById('recurringStartDate').value = formatDateForInput(new Date());
+
+        // Event Listeners
+        document.getElementById('transactionForm').addEventListener('submit', addTransaction);
+        document.getElementById('recurringForm').addEventListener('submit', addRecurringTransaction);
+        document.getElementById('clearAll').addEventListener('click', clearAllTransactions);
+        document.getElementById('prevMonth').addEventListener('click', function() { changeMonth(-1); });
+        document.getElementById('nextMonth').addEventListener('click', function() { changeMonth(1); });
+        document.getElementById('currentMonthBtn').addEventListener('click', goToCurrentMonth);
+
+        // Filter buttons
+        var filterButtons = document.querySelectorAll('.filter-btn');
+        for (var i = 0; i < filterButtons.length; i++) {
+            filterButtons[i].addEventListener('click', function() {
+                for (var j = 0; j < filterButtons.length; j++) {
+                    filterButtons[j].classList.remove('active');
+                }
+                this.classList.add('active');
+                currentFilter = this.getAttribute('data-filter');
+                displayTransactions();
+            });
+        }
+
+        // Tab buttons
+        var tabButtons = document.querySelectorAll('.tab-btn');
+        var tabContents = document.querySelectorAll('.tab-content');
+        for (var i = 0; i < tabButtons.length; i++) {
+            tabButtons[i].addEventListener('click', function() {
+                var targetTab = this.getAttribute('data-tab');
+                
+                for (var j = 0; j < tabButtons.length; j++) {
+                    tabButtons[j].classList.remove('active');
+                }
+                this.classList.add('active');
+                
+                for (var k = 0; k < tabContents.length; k++) {
+                    if (tabContents[k].getAttribute('data-tab') === targetTab) {
+                        tabContents[k].classList.add('active');
+                    } else {
+                        tabContents[k].classList.remove('active');
+                    }
+                }
+            });
+        }
+
+        function changeMonth(delta) {
+            selectedMonth.setMonth(selectedMonth.getMonth() + delta);
+            updateMonthDisplay();
+            updateSummary();
+            displayTransactions();
+        }
+
+        function goToCurrentMonth() {
+            selectedMonth = new Date();
+            selectedMonth.setDate(1);
+            updateMonthDisplay();
+            updateSummary();
+            displayTransactions();
+        }
+
+        function updateMonthDisplay() {
+            var months = ['January', 'February', 'March', 'April', 'May', 'June', 
+                          'July', 'August', 'September', 'October', 'November', 'December'];
+            var monthName = months[selectedMonth.getMonth()] + ' ' + selectedMonth.getFullYear();
+            document.getElementById('currentMonth').textContent = monthName;
+        }
+
+        function getMonthTransactions() {
+            var monthStart = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), 1);
+            var monthEnd = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1, 0);
+            
+            var monthTransactions = [];
+            for (var i = 0; i < transactions.length; i++) {
+                var tDate = new Date(transactions[i].date);
+                if (tDate >= monthStart && tDate <= monthEnd) {
+                    monthTransactions.push(transactions[i]);
+                }
+            }
+            
+            for (var i = 0; i < recurringTransactions.length; i++) {
+                var recurring = recurringTransactions[i];
+                var startDate = new Date(recurring.startDate);
+                
+                if (startDate <= monthEnd) {
+                    var shouldAdd = false;
+                    if (recurring.frequency === 'monthly') {
+                        shouldAdd = true;
+                    } else if (recurring.frequency === 'weekly') {
+                        shouldAdd = true;
+                    } else if (recurring.frequency === 'yearly') {
+                        if (startDate.getMonth() === selectedMonth.getMonth()) {
+                            shouldAdd = true;
+                        }
+                    }
+                    
+                    if (shouldAdd) {
+                        var virtualDate = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), startDate.getDate());
+                        monthTransactions.push({
+                            id: recurring.id,
+                            type: recurring.type,
+                            description: recurring.description,
+                            amount: recurring.amount,
+                            category: recurring.category,
+                            date: formatDateForInput(virtualDate),
+                            isRecurring: true,
+                            recurringId: recurring.id
+                        });
+                    }
+                }
+            }
+            
+            return monthTransactions;
+        }
+
+        function addTransaction(e) {
+            e.preventDefault();
+
+            var type = document.getElementById('type').value;
+            var description = document.getElementById('description').value.trim();
+            var amount = parseFloat(document.getElementById('amount').value);
+            var category = document.getElementById('category').value;
+            var date = document.getElementById('date').value;
+
+            if (!description || !amount || amount <= 0 || !category || !date) {
+                alert('Please fill in all fields with valid values');
+                return;
+            }
+
+            var transaction = {
+                id: Date.now(),
+                type: type,
+                description: description,
+                amount: amount,
+                category: category,
+                date: date
+            };
+
+            transactions.push(transaction);
+            saveToLocalStorage();
+            updateSummary();
+            displayTransactions();
+            document.getElementById('transactionForm').reset();
+            document.getElementById('date').value = formatDateForInput(new Date());
+        }
+
+        function addRecurringTransaction(e) {
+            e.preventDefault();
+
+            var type = document.getElementById('recurringType').value;
+            var description = document.getElementById('recurringDescription').value.trim();
+            var amount = parseFloat(document.getElementById('recurringAmount').value);
+            var category = document.getElementById('recurringCategory').value;
+            var frequency = document.getElementById('recurringFrequency').value;
+            var startDate = document.getElementById('recurringStartDate').value;
+
+            if (!description || !amount || amount <= 0 || !category || !startDate) {
+                alert('Please fill in all fields with valid values');
+                return;
+            }
+
+            var recurring = {
+                id: Date.now(),
+                type: type,
+                description: description,
+                amount: amount,
+                category: category,
+                frequency: frequency,
+                startDate: startDate
+            };
+
+            recurringTransactions.push(recurring);
+            saveToLocalStorage();
+            displayRecurringTransactions();
+            updateSummary();
+            displayTransactions();
+            document.getElementById('recurringForm').reset();
+            document.getElementById('recurringStartDate').value = formatDateForInput(new Date());
+        }
+
+        function displayRecurringTransactions() {
+            var recurringList = document.getElementById('recurringList');
+            recurringList.innerHTML = '';
+            
+            if (recurringTransactions.length === 0) {
+                recurringList.innerHTML = '<div class="empty-state">No recurring transactions</div>';
+                return;
+            }
+
+            for (var i = 0; i < recurringTransactions.length; i++) {
+                var recurring = recurringTransactions[i];
+                var recurringEl = document.createElement('div');
+                recurringEl.className = 'recurring-item ' + recurring.type;
+                
+                var sign = recurring.type === 'income' ? '+' : '-';
+                var frequencyText = recurring.frequency.charAt(0).toUpperCase() + recurring.frequency.slice(1);
+                var formattedDate = new Date(recurring.startDate).toLocaleDateString();
+
+                recurringEl.innerHTML = 
+                    '<div class="recurring-description">' + recurring.description + '</div>' +
+                    '<div class="recurring-details">' +
+                    '<span class="recurring-category">' + recurring.category + '</span>' +
+                    '<span class="recurring-frequency">🔄 ' + frequencyText + '</span>' +
+                    '<span class="recurring-start">Start: ' + formattedDate + '</span>' +
+                    '</div>' +
+                    '<div class="recurring-amount-container">' +
+                    '<span class="recurring-amount ' + recurring.type + '">' +
+                    sign + '€' + recurring.amount.toFixed(2) +
+                    '</span>' +
+                    '<button class="btn-delete" onclick="deleteRecurring(' + recurring.id + ')">Delete</button>' +
+                    '</div>';
+
+                recurringList.appendChild(recurringEl);
+            }
+        }
+
+        function displayTransactions() {
+            var transactionsList = document.getElementById('transactionsList');
+            transactionsList.innerHTML = '';
+            
+            var monthTransactions = getMonthTransactions();
+            
+            if (currentFilter !== 'all') {
+                var filtered = [];
+                for (var i = 0; i < monthTransactions.length; i++) {
+                    if (monthTransactions[i].type === currentFilter) {
+                        filtered.push(monthTransactions[i]);
+                    }
+                }
+                monthTransactions = filtered;
+            }
+
+            if (monthTransactions.length === 0) {
+                transactionsList.innerHTML = '<div class="empty-state">No transactions this month</div>';
+                return;
+            }
+
+            monthTransactions.sort(function(a, b) {
+                return new Date(b.date) - new Date(a.date);
+            });
+
+            for (var i = 0; i < monthTransactions.length; i++) {
+                var transaction = monthTransactions[i];
+                var transactionEl = document.createElement('div');
+                transactionEl.className = 'transaction-item ' + transaction.type;
+                
+                var sign = transaction.type === 'income' ? '+' : '-';
+                var formattedDate = new Date(transaction.date).toLocaleDateString();
+
+                var recurringBadge = transaction.isRecurring ? '<span class="recurring-badge">🔄 Recurring</span>' : '';
+                var deleteBtn = transaction.isRecurring 
+                    ? '' 
+                    : '<button class="btn-delete" onclick="deleteTransaction(' + transaction.id + ')">Delete</button>';
+
+                transactionEl.innerHTML =
+                    '<div class="transaction-description">' + transaction.description + ' ' + recurringBadge + '</div>' +
+                    '<div class="transaction-details">' +
+                    '<span class="transaction-category">' + transaction.category + '</span>' +
+                    '<span class="transaction-date">' + formattedDate + '</span>' +
+                    '</div>' +
+                    '<div class="transaction-amount-container">' +
+                    '<span class="transaction-amount ' + transaction.type + '">' +
+                    sign + '€' + transaction.amount.toFixed(2) +
+                    '</span>' +
+                    deleteBtn +
+                    '</div>';
+
+                transactionsList.appendChild(transactionEl);
+            }
+        }
+
+        function updateSummary() {
+            var monthTransactions = getMonthTransactions();
+            var income = 0;
+            var expenses = 0;
+            
+            for (var i = 0; i < monthTransactions.length; i++) {
+                if (monthTransactions[i].type === 'income') {
+                    income += monthTransactions[i].amount;
+                } else {
+                    expenses += monthTransactions[i].amount;
+                }
+            }
+            
+            var profitLoss = income - expenses;
+
+            document.getElementById('totalIncome').textContent = '€' + income.toFixed(2);
+            document.getElementById('totalExpenses').textContent = '€' + expenses.toFixed(2);
+            document.getElementById('profitLoss').textContent = '€' + profitLoss.toFixed(2);
+
+            var profitLossEl = document.getElementById('profitLoss');
+            profitLossEl.classList.remove('positive', 'negative');
+            if (profitLoss > 0) {
+                profitLossEl.classList.add('positive');
+            } else if (profitLoss < 0) {
+                profitLossEl.classList.add('negative');
+            }
+        }
+
+        function deleteTransaction(id) {
+            if (confirm('Delete this transaction?')) {
+                var filtered = [];
+                for (var i = 0; i < transactions.length; i++) {
+                    if (transactions[i].id !== id) {
+                        filtered.push(transactions[i]);
+                    }
+                }
+                transactions = filtered;
+                saveToLocalStorage();
+                updateSummary();
+                displayTransactions();
+            }
+        }
+
+        function deleteRecurring(id) {
+            if (confirm('Delete this recurring transaction?')) {
+                var filtered = [];
+                for (var i = 0; i < recurringTransactions.length; i++) {
+                    if (recurringTransactions[i].id !== id) {
+                        filtered.push(recurringTransactions[i]);
+                    }
+                }
+                recurringTransactions = filtered;
+                saveToLocalStorage();
+                displayRecurringTransactions();
+                updateSummary();
+                displayTransactions();
+            }
+        }
+
+        function clearAllTransactions() {
+            if (confirm('Delete ALL one-time transactions this month?')) {
+                var monthStart = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), 1);
+                var monthEnd = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1, 0);
+                
+                var filtered = [];
+                for (var i = 0; i < transactions.length; i++) {
+                    var tDate = new Date(transactions[i].date);
+                    if (tDate < monthStart || tDate > monthEnd) {
+                        filtered.push(transactions[i]);
+                    }
+                }
+                transactions = filtered;
+                
+                saveToLocalStorage();
+                updateSummary();
+                displayTransactions();
+            }
+        }
+
+        function saveToLocalStorage() {
+            try {
+                localStorage.setItem('transactions', JSON.stringify(transactions));
+                localStorage.setItem('recurringTransactions', JSON.stringify(recurringTransactions));
+            } catch (e) {
+                console.error('Error saving to localStorage:', e);
+            }
+        }
+
+        function init() {
+            updateMonthDisplay();
+            updateSummary();
+            displayTransactions();
+            displayRecurringTransactions();
+        }
+
+        // Initialize on load
+        init();
+    </script>
 </body>
 </html>
-
