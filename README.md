@@ -1,3 +1,371 @@
-# Fasouli App
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Fasouli</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+        }
+        h1 { text-align: center; margin-bottom: 20px; color: #333; }
+        .month { 
+            background: #f0f0f0; 
+            padding: 15px; 
+            border-radius: 10px; 
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .month h2 { font-size: 1.2em; margin: 10px 0; }
+        .month button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+        .summary {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .card {
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .card h3 { font-size: 0.9em; margin-bottom: 10px; color: #666; }
+        .card p { font-size: 1.8em; font-weight: bold; }
+        .income-card { background: #d4f4dd; }
+        .income-card p { color: #059669; }
+        .expense-card { background: #ffe4e1; }
+        .expense-card p { color: #dc2626; }
+        .profit-card { background: #e8dff5; }
+        .profit-card p { color: #7c3aed; }
+        .form-box {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .form-box h2 { margin-bottom: 15px; }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        button.submit {
+            width: 100%;
+            padding: 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+        .transactions {
+            margin-top: 20px;
+        }
+        .transaction {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .transaction.income { border-left-color: #059669; background: #f0fdf4; }
+        .transaction.expense { border-left-color: #dc2626; background: #fef2f2; }
+        .transaction h4 { margin-bottom: 8px; }
+        .transaction .details { font-size: 0.9em; color: #666; margin-bottom: 8px; }
+        .transaction .amount { font-size: 1.3em; font-weight: bold; }
+        .transaction .amount.income { color: #059669; }
+        .transaction .amount.expense { color: #dc2626; }
+        .btn-delete {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🫘 Fasouli</h1>
+        <p style="text-align:center;color:#666;margin-bottom:20px;">to Fasouli gemizei to sakouli</p>
+        
+        <div class="month">
+            <button onclick="prevMonth()">◀</button>
+            <button onclick="nextMonth()">▶</button>
+            <h2 id="monthName">October 2025</h2>
+            <button onclick="currentMonth()" style="background:#10b981;">Current Month</button>
+        </div>
+        
+        <div class="summary">
+            <div class="card income-card">
+                <h3>TOTAL INCOME</h3>
+                <p id="totalIncome">$0.00</p>
+            </div>
+            <div class="card expense-card">
+                <h3>TOTAL EXPENSES</h3>
+                <p id="totalExpenses">$0.00</p>
+            </div>
+            <div class="card profit-card">
+                <h3>PROFIT & LOSS</h3>
+                <p id="profitLoss">$0.00</p>
+            </div>
+        </div>
+        
+        <div class="form-box">
+            <h2>Add Transaction</h2>
+            <div>
+                <div class="form-group">
+                    <label>Type:</label>
+                    <select id="type">
+                        <option value="income">Income</option>
+                        <option value="expense">Expense</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Description:</label>
+                    <input type="text" id="description" placeholder="e.g., Salary" required>
+                </div>
+                <div class="form-group">
+                    <label>Amount:</label>
+                    <input type="number" id="amount" step="0.01" placeholder="0.00" required>
+                </div>
+                <div class="form-group">
+                    <label>Category:</label>
+                    <select id="category">
+                        <option value="Salary">Salary</option>
+                        <option value="Freelance">Freelance</option>
+                        <option value="Food">Food</option>
+                        <option value="Groceries">Groceries</option>
+                        <option value="Transportation">Transportation</option>
+                        <option value="Utilities">Utilities</option>
+                        <option value="Rent">Rent</option>
+                        <option value="Healthcare">Healthcare</option>
+                        <option value="Entertainment">Entertainment</option>
+                        <option value="Shopping">Shopping</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Date:</label>
+                    <input type="date" id="date" required>
+                </div>
+                <button type="button" class="submit" onclick="addTransaction()">Add Transaction</button>
+            </div>
+        </div>
+        
+        <div class="transactions">
+            <h2>Transaction History</h2>
+            <div id="list"></div>
+        </div>
+    </div>
 
-The Fasouli App is a personal finance and expense-tracking tool designed to help
+    <script>
+        var data = [];
+        var currentMonthDate = new Date();
+        currentMonthDate.setDate(1);
+        
+        function loadData() {
+            try {
+                var saved = localStorage.getItem('fasouliData');
+                if (saved) {
+                    data = JSON.parse(saved);
+                }
+            } catch(e) {
+                console.log('Error loading:', e);
+            }
+        }
+        
+        function saveData() {
+            try {
+                localStorage.setItem('fasouliData', JSON.stringify(data));
+            } catch(e) {
+                alert('Error saving data');
+            }
+        }
+        
+        function formatDate(d) {
+            var date = new Date(d);
+            var m = '' + (date.getMonth() + 1);
+            var day = '' + date.getDate();
+            var y = date.getFullYear();
+            if (m.length < 2) m = '0' + m;
+            if (day.length < 2) day = '0' + day;
+            return [y, m, day].join('-');
+        }
+        
+        function updateMonth() {
+            var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+            document.getElementById('monthName').textContent = months[currentMonthDate.getMonth()] + ' ' + currentMonthDate.getFullYear();
+        }
+        
+        function prevMonth() {
+            currentMonthDate.setMonth(currentMonthDate.getMonth() - 1);
+            updateMonth();
+            display();
+        }
+        
+        function nextMonth() {
+            currentMonthDate.setMonth(currentMonthDate.getMonth() + 1);
+            updateMonth();
+            display();
+        }
+        
+        function currentMonth() {
+            currentMonthDate = new Date();
+            currentMonthDate.setDate(1);
+            updateMonth();
+            display();
+        }
+        
+        function addTransaction() {
+            var type = document.getElementById('type').value;
+            var desc = document.getElementById('description').value.trim();
+            var amtInput = document.getElementById('amount').value;
+            var cat = document.getElementById('category').value;
+            var date = document.getElementById('date').value;
+            
+            if (!desc) {
+                alert('Please enter a description');
+                return;
+            }
+            
+            if (!amtInput || amtInput === '' || amtInput === '0' || parseFloat(amtInput) <= 0) {
+                alert('Please enter a valid amount greater than 0');
+                return;
+            }
+            
+            if (!date) {
+                alert('Please select a date');
+                return;
+            }
+            
+            var amt = parseFloat(amtInput);
+            
+            data.push({
+                id: Date.now(),
+                type: type,
+                description: desc,
+                amount: amt,
+                category: cat,
+                date: date
+            });
+            
+            saveData();
+            display();
+            
+            document.getElementById('description').value = '';
+            document.getElementById('amount').value = '';
+            document.getElementById('date').value = formatDate(new Date());
+        }
+        
+        function deleteItem(id) {
+            if (confirm('Delete this transaction?')) {
+                var newData = [];
+                for (var i = 0; i < data.length; i++) {
+                    if (data[i].id !== id) {
+                        newData.push(data[i]);
+                    }
+                }
+                data = newData;
+                saveData();
+                display();
+            }
+        }
+        
+        function display() {
+            var start = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth(), 1);
+            var end = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() + 1, 0);
+            
+            var monthData = [];
+            for (var i = 0; i < data.length; i++) {
+                var itemDate = new Date(data[i].date);
+                if (itemDate >= start && itemDate <= end) {
+                    monthData.push(data[i]);
+                }
+            }
+            
+            var income = 0;
+            var expenses = 0;
+            
+            for (var i = 0; i < monthData.length; i++) {
+                if (monthData[i].type === 'income') {
+                    income += monthData[i].amount;
+                } else {
+                    expenses += monthData[i].amount;
+                }
+            }
+            
+            document.getElementById('totalIncome').textContent = '$' + income.toFixed(2);
+            document.getElementById('totalExpenses').textContent = '$' + expenses.toFixed(2);
+            document.getElementById('profitLoss').textContent = '$' + (income - expenses).toFixed(2);
+            
+            var list = document.getElementById('list');
+            list.innerHTML = '';
+            
+            if (monthData.length === 0) {
+                list.innerHTML = '<p style="text-align:center;color:#999;padding:20px;">No transactions this month</p>';
+                return;
+            }
+            
+            monthData.sort(function(a, b) {
+                return new Date(b.date) - new Date(a.date);
+            });
+            
+            for (var i = 0; i < monthData.length; i++) {
+                var item = monthData[i];
+                var div = document.createElement('div');
+                div.className = 'transaction ' + item.type;
+                
+                var sign = item.type === 'income' ? '+' : '-';
+                var dateStr = new Date(item.date).toLocaleDateString();
+                
+                div.innerHTML = 
+                    '<h4>' + item.description + '</h4>' +
+                    '<div class="details">' + item.category + ' • ' + dateStr + '</div>' +
+                    '<div class="amount ' + item.type + '">' + sign + '$' + item.amount.toFixed(2) + '</div>' +
+                    '<button class="btn-delete" onclick="deleteItem(' + item.id + ')">Delete</button>';
+                
+                list.appendChild(div);
+            }
+        }
+        
+        loadData();
+        document.getElementById('date').value = formatDate(new Date());
+        updateMonth();
+        display();
+    </script>
+</body>
+</html>
