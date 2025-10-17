@@ -206,12 +206,7 @@ font-style: italic;
 
 <div class="transactions">
 <h2>Transaction History</h2>
-
-<div class="section-title income-section">💰 INCOME</div>
-<div id="incomeList"></div>
-
-<div class="section-title expense-section">💸 EXPENSES</div>
-<div id="expenseList"></div>
+<div id="list"></div>
 </div>
 </div>
 
@@ -404,58 +399,33 @@ document.getElementById('totalIncome').textContent = '€' + income.toFixed(2);
 document.getElementById('totalExpenses').textContent = '€' + expenses.toFixed(2);
 document.getElementById('profitLoss').textContent = '€' + (income - expenses).toFixed(2);
 
-// Display income list
-var incomeList = document.getElementById('incomeList');
-incomeList.innerHTML = '';
+// Display all transactions sorted by date
+var list = document.getElementById('list');
+list.innerHTML = '';
 
-if (incomeData.length === 0) {
-incomeList.innerHTML = '<p class="empty-msg">No income this month</p>';
-} else {
-incomeData.sort(function(a, b) {
+if (monthData.length === 0) {
+list.innerHTML = '<p class="empty-msg">No transactions this month</p>';
+return;
+}
+
+monthData.sort(function(a, b) {
 return new Date(b.date) - new Date(a.date);
 });
 
-for (var i = 0; i < incomeData.length; i++) {
-var item = incomeData[i];
+for (var i = 0; i < monthData.length; i++) {
+var item = monthData[i];
 var div = document.createElement('div');
-div.className = 'transaction income';
+div.className = 'transaction ' + item.type;
+var sign = item.type === 'income' ? '+' : '-';
 var dateStr = new Date(item.date).toLocaleDateString();
 
 div.innerHTML =
 '<h4>' + item.description + '</h4>' +
 '<div class="details">' + item.category + ' • ' + dateStr + '</div>' +
-'<div class="amount income">+€' + item.amount.toFixed(2) + '</div>' +
+'<div class="amount ' + item.type + '">' + sign + '€' + item.amount.toFixed(2) + '</div>' +
 '<button class="btn-delete" onclick="deleteItem(' + item.id + ')">Delete</button>';
 
-incomeList.appendChild(div);
-}
-}
-
-// Display expense list
-var expenseList = document.getElementById('expenseList');
-expenseList.innerHTML = '';
-
-if (expenseData.length === 0) {
-expenseList.innerHTML = '<p class="empty-msg">No expenses this month</p>';
-} else {
-expenseData.sort(function(a, b) {
-return new Date(b.date) - new Date(a.date);
-});
-
-for (var i = 0; i < expenseData.length; i++) {
-var item = expenseData[i];
-var div = document.createElement('div');
-div.className = 'transaction expense';
-var dateStr = new Date(item.date).toLocaleDateString();
-
-div.innerHTML =
-'<h4>' + item.description + '</h4>' +
-'<div class="details">' + item.category + ' • ' + dateStr + '</div>' +
-'<div class="amount expense">-€' + item.amount.toFixed(2) + '</div>' +
-'<button class="btn-delete" onclick="deleteItem(' + item.id + ')">Delete</button>';
-
-expenseList.appendChild(div);
-}
+list.appendChild(div);
 }
 }
 
