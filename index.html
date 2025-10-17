@@ -2,13 +2,11 @@
 <html lang="en">
 <head>
     <link rel="apple-touch-icon" href="icon.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Fasouli">
-
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Fasouli">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="apple-mobile-web-app-capable" content="yes">
     <title>Fasouli</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -97,6 +95,22 @@
         .transactions {
             margin-top: 20px;
         }
+        .section-title {
+            background: #f0f0f0;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 20px 0 10px 0;
+            font-weight: bold;
+            color: #333;
+        }
+        .section-title.income-section {
+            background: #d4f4dd;
+            color: #059669;
+        }
+        .section-title.expense-section {
+            background: #ffe4e1;
+            color: #dc2626;
+        }
         .transaction {
             background: white;
             padding: 15px;
@@ -119,6 +133,12 @@
             padding: 8px 15px;
             border-radius: 5px;
             margin-top: 10px;
+        }
+        .empty-msg {
+            text-align: center;
+            color: #999;
+            padding: 15px;
+            font-style: italic;
         }
     </style>
 </head>
@@ -192,8 +212,13 @@
         </div>
         
         <div class="transactions">
-            <h2>Transaction History</h2>
-            <div id="list"></div>
+            <h2 style="margin-bottom: 10px;">Transaction History</h2>
+            
+            <div class="section-title income-section">💰 INCOME</div>
+            <div id="incomeList"></div>
+            
+            <div class="section-title expense-section">💸 EXPENSES</div>
+            <div id="expenseList"></div>
         </div>
     </div>
 
@@ -322,48 +347,79 @@
                 }
             }
             
+            // Separate income and expenses
+            var incomeData = [];
+            var expenseData = [];
             var income = 0;
             var expenses = 0;
             
             for (var i = 0; i < monthData.length; i++) {
                 if (monthData[i].type === 'income') {
+                    incomeData.push(monthData[i]);
                     income += monthData[i].amount;
                 } else {
+                    expenseData.push(monthData[i]);
                     expenses += monthData[i].amount;
                 }
             }
             
+            // Update summary
             document.getElementById('totalIncome').textContent = '€' + income.toFixed(2);
             document.getElementById('totalExpenses').textContent = '€' + expenses.toFixed(2);
             document.getElementById('profitLoss').textContent = '€' + (income - expenses).toFixed(2);
             
-            var list = document.getElementById('list');
-            list.innerHTML = '';
+            // Display income list
+            var incomeList = document.getElementById('incomeList');
+            incomeList.innerHTML = '';
             
-            if (monthData.length === 0) {
-                list.innerHTML = '<p style="text-align:center;color:#999;padding:20px;">No transactions this month</p>';
-                return;
+            if (incomeData.length === 0) {
+                incomeList.innerHTML = '<p class="empty-msg">No income this month</p>';
+            } else {
+                incomeData.sort(function(a, b) {
+                    return new Date(b.date) - new Date(a.date);
+                });
+                
+                for (var i = 0; i < incomeData.length; i++) {
+                    var item = incomeData[i];
+                    var div = document.createElement('div');
+                    div.className = 'transaction income';
+                    var dateStr = new Date(item.date).toLocaleDateString();
+                    
+                    div.innerHTML = 
+                        '<h4>' + item.description + '</h4>' +
+                        '<div class="details">' + item.category + ' • ' + dateStr + '</div>' +
+                        '<div class="amount income">+€' + item.amount.toFixed(2) + '</div>' +
+                        '<button class="btn-delete" onclick="deleteItem(' + item.id + ')">Delete</button>';
+                    
+                    incomeList.appendChild(div);
+                }
             }
             
-            monthData.sort(function(a, b) {
-                return new Date(b.date) - new Date(a.date);
-            });
+            // Display expense list
+            var expenseList = document.getElementById('expenseList');
+            expenseList.innerHTML = '';
             
-            for (var i = 0; i < monthData.length; i++) {
-                var item = monthData[i];
-                var div = document.createElement('div');
-                div.className = 'transaction ' + item.type;
+            if (expenseData.length === 0) {
+                expenseList.innerHTML = '<p class="empty-msg">No expenses this month</p>';
+            } else {
+                expenseData.sort(function(a, b) {
+                    return new Date(b.date) - new Date(a.date);
+                });
                 
-                var sign = item.type === 'income' ? '+' : '-';
-                var dateStr = new Date(item.date).toLocaleDateString();
-                
-                div.innerHTML = 
-                    '<h4>' + item.description + '</h4>' +
-                    '<div class="details">' + item.category + ' • ' + dateStr + '</div>' +
-                    '<div class="amount ' + item.type + '">' + sign + '€' + item.amount.toFixed(2) + '</div>' +
-                    '<button class="btn-delete" onclick="deleteItem(' + item.id + ')">Delete</button>';
-                
-                list.appendChild(div);
+                for (var i = 0; i < expenseData.length; i++) {
+                    var item = expenseData[i];
+                    var div = document.createElement('div');
+                    div.className = 'transaction expense';
+                    var dateStr = new Date(item.date).toLocaleDateString();
+                    
+                    div.innerHTML = 
+                        '<h4>' + item.description + '</h4>' +
+                        '<div class="details">' + item.category + ' • ' + dateStr + '</div>' +
+                        '<div class="amount expense">-€' + item.amount.toFixed(2) + '</div>' +
+                        '<button class="btn-delete" onclick="deleteItem(' + item.id + ')">Delete</button>';
+                    
+                    expenseList.appendChild(div);
+                }
             }
         }
         
