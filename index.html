@@ -1,499 +1,635 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="apple-touch-icon" href="icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Fasouli">
 
-  <!-- iPhone App Capabilities -->
-  <link rel="apple-touch-icon" href="icon.png" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="Fasouli" />
-
-  <title>🫘 Fasouli</title>
-
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #F3E8FF 0%, #EDE9FE 100%);
-      min-height: 100vh;
-      padding: 10px;
-      color: #2D1B69;
-    }
-
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-      background: white;
-      border-radius: 20px;
-      padding: 25px;
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
-    }
-
-    h1 {
-      text-align: center;
-      margin-bottom: 10px;
-      color: #7C3AED;
-      font-size: 2em;
-    }
-
-    p {
-      text-align: center;
-      color: #666;
-      margin-bottom: 20px;
-    }
-
-    /* Month Selector */
-    .month {
-      background: #F5F3FF;
-      padding: 15px;
-      border-radius: 12px;
-      margin-bottom: 25px;
-      text-align: center;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    }
-
-    .month h2 {
-      font-size: 1.2em;
-      margin: 10px 0;
-      color: #4C1D95;
-    }
-
-    .month button {
-      padding: 10px 20px;
-      margin: 5px;
-      background: #7C3AED;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      font-size: 1em;
-      transition: all 0.2s ease-in-out;
-    }
-
-    .month button:hover {
-      background: #6D28D9;
-      transform: scale(1.03);
-    }
-
-    button[onclick="currentMonth()"] {
-      background: #10B981;
-    }
-
-    button[onclick="currentMonth()"]:hover {
-      background: #059669;
-    }
-
-    /* Summary Cards */
-    .summary {
-      display: grid;
-      gap: 15px;
-      margin-bottom: 25px;
-    }
-
-    .card {
-      padding: 20px;
-      border-radius: 14px;
-      text-align: center;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
-      transition: 0.2s;
-    }
-
-    .card:hover {
-      transform: scale(1.01);
-    }
-
-    .card h3 {
-      font-size: 0.95em;
-      margin-bottom: 8px;
-      color: #555;
-    }
-
-    .card p {
-      font-size: 1.8em;
-      font-weight: bold;
-    }
-
-    .income-card {
-      background: #D1FAE5;
-    }
-
-    .income-card p {
-      color: #10B981;
-    }
-
-    .expense-card {
-      background: #FEE2E2;
-    }
-
-    .expense-card p {
-      color: #EF4444;
-    }
-
-    .profit-card {
-      background: #E9D5FF;
-    }
-
-    .profit-card p {
-      color: #7C3AED;
-    }
-
-    /* Form */
-    .form-box {
-      background: #FAF5FF;
-      padding: 25px;
-      border-radius: 15px;
-      margin-bottom: 25px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    }
-
-    .form-box h2 {
-      margin-bottom: 15px;
-      color: #4C1D95;
-    }
-
-    .form-group {
-      margin-bottom: 15px;
-    }
-
-    .form-group label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: 600;
-    }
-
-    .form-group input,
-    .form-group select {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid #DDD6FE;
-      border-radius: 10px;
-      font-size: 16px;
-      background: #F9FAFB;
-      transition: 0.2s;
-    }
-
-    .form-group input:focus,
-    .form-group select:focus {
-      outline: none;
-      border-color: #7C3AED;
-      background: #FFFFFF;
-    }
-
-    button.submit {
-      width: 100%;
-      padding: 14px;
-      background: #7C3AED;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      font-size: 1.1em;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    button.submit:hover {
-      background: #6D28D9;
-      transform: scale(1.02);
-    }
-
-    /* Transactions */
-    .transactions {
-      margin-top: 20px;
-    }
-
-    .transactions h2 {
-      color: #4C1D95;
-    }
-
-    .transaction {
-      background: white;
-      padding: 15px;
-      margin-bottom: 10px;
-      border-left: 5px solid #7C3AED;
-      border-radius: 12px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
-    }
-
-    .transaction.income {
-      border-left-color: #10B981;
-      background: #ECFDF5;
-    }
-
-    .transaction.expense {
-      border-left-color: #EF4444;
-      background: #FEF2F2;
-    }
-
-    .transaction h4 {
-      margin-bottom: 8px;
-      color: #2D1B69;
-    }
-
-    .transaction .details {
-      font-size: 0.9em;
-      color: #666;
-      margin-bottom: 8px;
-    }
-
-    .transaction .amount {
-      font-size: 1.3em;
-      font-weight: bold;
-    }
-
-    .transaction .amount.income {
-      color: #10B981;
-    }
-
-    .transaction .amount.expense {
-      color: #EF4444;
-    }
-
-    .btn-delete {
-      background: #EF4444;
-      color: white;
-      border: none;
-      padding: 8px 15px;
-      border-radius: 8px;
-      margin-top: 8px;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    .btn-delete:hover {
-      background: #DC2626;
-    }
-
-    .empty-msg {
-      text-align: center;
-      color: #999;
-      padding: 15px;
-      font-style: italic;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Fasouli</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+font-family: -apple-system, sans-serif;
+background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+min-height: 100vh;
+padding: 10px;
+}
+.container {
+max-width: 800px;
+margin: 0 auto;
+background: white;
+border-radius: 15px;
+padding: 20px;
+}
+h1 { text-align: center; margin-bottom: 20px; color: #333; }
+.month {
+background: #f0f0f0;
+padding: 15px;
+border-radius: 10px;
+margin-bottom: 20px;
+text-align: center;
+}
+.month h2 { font-size: 1.2em; margin: 10px 0; }
+.month button {
+padding: 10px 20px;
+margin: 5px;
+background: #667eea;
+color: white;
+border: none;
+border-radius: 8px;
+font-size: 1em;
+}
+.summary {
+display: grid;
+gap: 15px;
+margin-bottom: 20px;
+}
+.card {
+padding: 20px;
+border-radius: 10px;
+text-align: center;
+}
+.card h3 { font-size: 0.9em; margin-bottom: 10px; color: #666; }
+.card p { font-size: 1.8em; font-weight: bold; }
+.income-card { background: #d4f4dd; }
+.income-card p { color: #059669; }
+.expense-card { background: #ffe4e1; }
+.expense-card p { color: #dc2626; }
+.profit-card { background: #e8dff5; }
+.profit-card p { color: #7c3aed; }
+.form-box {
+background: #f9f9f9;
+padding: 20px;
+border-radius: 10px;
+margin-bottom: 20px;
+}
+.form-box h2 { margin-bottom: 15px; }
+.form-group {
+margin-bottom: 15px;
+}
+.form-group label {
+display: block;
+margin-bottom: 5px;
+font-weight: 600;
+}
+.form-group input,
+.form-group select {
+width: 100%;
+padding: 12px;
+border: 1px solid #ddd;
+border-radius: 8px;
+font-size: 16px;
+}
+button.submit {
+width: 100%;
+padding: 15px;
+background: #667eea;
+color: white;
+border: none;
+border-radius: 8px;
+font-size: 1.1em;
+font-weight: bold;
+}
+.transactions {
+margin-top: 20px;
+}
+.section-title {
+background: #f0f0f0;
+padding: 12px;
+border-radius: 8px;
+margin: 20px 0 10px 0;
+font-weight: bold;
+color: #333;
+font-size: 1.1em;
+}
+.section-title.income-section {
+background: #d4f4dd;
+color: #059669;
+}
+.section-title.expense-section {
+background: #ffe4e1;
+color: #dc2626;
+}
+.transaction {
+background: white;
+padding: 15px;
+margin-bottom: 10px;
+border-left: 4px solid #667eea;
+border-radius: 8px;
+box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.transaction.income { border-left-color: #059669; background: #f0fdf4; }
+.transaction.expense { border-left-color: #dc2626; background: #fef2f2; }
+.transaction h4 { margin-bottom: 8px; }
+.transaction .details { font-size: 0.9em; color: #666; margin-bottom: 8px; }
+.transaction .amount { font-size: 1.3em; font-weight: bold; }
+.transaction .amount.income { color: #059669; }
+.transaction .amount.expense { color: #dc2626; }
+.btn-delete {
+background: #dc2626;
+color: white;
+border: none;
+padding: 8px 15px;
+border-radius: 5px;
+margin-top: 10px;
+}
+.empty-msg {
+text-align: center;
+color: #999;
+padding: 15px;
+font-style: italic;
+}
+.export-section {
+background: #f0f0f0;
+padding: 20px;
+border-radius: 10px;
+margin-bottom: 20px;
+}
+.export-section h3 {
+margin-bottom: 15px;
+color: #333;
+}
+.export-controls {
+display: grid;
+gap: 15px;
+margin-bottom: 15px;
+}
+.export-row {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 10px;
+}
+.export-row label {
+display: block;
+margin-bottom: 5px;
+font-weight: 600;
+color: #555;
+}
+.export-row input {
+width: 100%;
+padding: 10px;
+border: 1px solid #ddd;
+border-radius: 8px;
+font-size: 14px;
+}
+.btn-export {
+width: 100%;
+padding: 12px 30px;
+background: #10b981;
+color: white;
+border: none;
+border-radius: 8px;
+font-size: 1em;
+font-weight: bold;
+cursor: pointer;
+}
+.btn-export:hover {
+background: #059669;
+}
+.btn-export:disabled {
+background: #ccc;
+cursor: not-allowed;
+}
+.export-info {
+text-align: center;
+color: #666;
+font-size: 0.9em;
+margin-top: 10px;
+}
+</style>
 </head>
-
 <body>
-  <div class="container">
-    <h1>🫘 Fasouli</h1>
-    <p>to Fasouli gemizei to sakouli</p>
+<div class="container">
+<h1>🫘 Fasouli</h1>
+<p style="text-align:center;color:#666;margin-bottom:20px;">to Fasouli gemizei to sakouli</p>
 
-    <div class="month">
-      <button onclick="prevMonth()">◀</button>
-      <button onclick="nextMonth()">▶</button>
-      <h2 id="monthName">October 2025</h2>
-      <button onclick="currentMonth()" style="background:#10B981;">Current Month</button>
-    </div>
+<div class="month">
+<button onclick="prevMonth()">◀</button>
+<button onclick="nextMonth()">▶</button>
+<h2 id="monthName">October 2025</h2>
+<button onclick="currentMonth()" style="background:#10b981;">Current Month</button>
+</div>
 
-    <div class="summary">
-      <div class="card income-card">
-        <h3>TOTAL INCOME</h3>
-        <p id="totalIncome">€0.00</p>
-      </div>
-      <div class="card expense-card">
-        <h3>TOTAL EXPENSES</h3>
-        <p id="totalExpenses">€0.00</p>
-      </div>
-      <div class="card profit-card">
-        <h3>PROFIT & LOSS</h3>
-        <p id="profitLoss">€0.00</p>
-      </div>
-    </div>
+<div class="summary">
+<div class="card income-card">
+<h3>TOTAL INCOME</h3>
+<p id="totalIncome">€0.00</p>
+</div>
+<div class="card expense-card">
+<h3>TOTAL EXPENSES</h3>
+<p id="totalExpenses">€0.00</p>
+</div>
+<div class="card profit-card">
+<h3>PROFIT & LOSS</h3>
+<p id="profitLoss">€0.00</p>
+</div>
+</div>
 
-    <div class="form-box">
-      <h2>Add Transaction</h2>
-      <div>
-        <div class="form-group">
-          <label>Type:</label>
-          <select id="type" onchange="updateCategories()">
-            <option value="income">Income</option>
-            <option value="expense">Expense</option>
-          </select>
-        </div>
+<div class="form-box">
+<h2>Add Transaction</h2>
+<div>
+<div class="form-group">
+<label>Type:</label>
+<select id="type" onchange="updateCategories()">
+<option value="income">Income</option>
+<option value="expense">Expense</option>
+</select>
+</div>
+<div class="form-group">
+<label>Description:</label>
+<input type="text" id="description" placeholder="e.g., Salary" required>
+</div>
+<div class="form-group">
+<label>Amount:</label>
+<input type="number" id="amount" step="0.01" placeholder="0.00" required>
+</div>
+<div class="form-group">
+<label>Category:</label>
+<select id="category">
+<!-- Categories populated by JavaScript -->
+</select>
+</div>
+<div class="form-group">
+<label>Date:</label>
+<input type="date" id="date" required>
+</div>
+<button type="button" class="submit" onclick="addTransaction()">Add Transaction</button>
+</div>
+</div>
 
-        <div class="form-group">
-          <label>Description:</label>
-          <input type="text" id="description" placeholder="e.g., Salary" required />
-        </div>
+<div class="export-section">
+<h3>📊 Export to Excel</h3>
+<div class="export-controls">
+<div class="export-row">
+<div>
+<label>Start Date:</label>
+<input type="date" id="exportStartDate">
+</div>
+<div>
+<label>End Date:</label>
+<input type="date" id="exportEndDate">
+</div>
+</div>
+<button class="btn-export" onclick="exportToExcel()">Export Date Range to Excel</button>
+<p class="export-info" id="exportInfo">Select date range to export</p>
+</div>
+</div>
 
-        <div class="form-group">
-          <label>Amount:</label>
-          <input type="number" id="amount" step="0.01" placeholder="0.00" required />
-        </div>
+<div class="transactions">
+<h2>Transaction History</h2>
+<div id="list"></div>
+</div>
+</div>
 
-        <div class="form-group">
-          <label>Category:</label>
-          <select id="category"></select>
-        </div>
+<script>
+var data = [];
+var currentMonthDate = new Date();
+currentMonthDate.setDate(1);
 
-        <div class="form-group">
-          <label>Date:</label>
-          <input type="date" id="date" required />
-        </div>
+function loadData() {
+try {
+var saved = localStorage.getItem('fasouliData');
+if (saved) {
+data = JSON.parse(saved);
+}
+} catch(e) {
+console.log('Error loading:', e);
+}
+}
 
-        <button type="button" class="submit" onclick="addTransaction()">Add Transaction</button>
-      </div>
-    </div>
+function saveData() {
+try {
+localStorage.setItem('fasouliData', JSON.stringify(data));
+} catch(e) {
+alert('Error saving data');
+}
+}
 
-    <div class="transactions">
-      <h2>Transaction History</h2>
-      <div id="list"></div>
-    </div>
-  </div>
+function formatDate(d) {
+var date = new Date(d);
+var m = '' + (date.getMonth() + 1);
+var day = '' + date.getDate();
+var y = date.getFullYear();
+if (m.length < 2) m = '0' + m;
+if (day.length < 2) day = '0' + day;
+return [y, m, day].join('-');
+}
 
-  <script>
-    var data = [];
-    var currentMonthDate = new Date();
-    currentMonthDate.setDate(1);
+function updateMonth() {
+var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+document.getElementById('monthName').textContent = months[currentMonthDate.getMonth()] + ' ' + currentMonthDate.getFullYear();
+}
 
-    function loadData() {
-      try {
-        var saved = localStorage.getItem('fasouliData');
-        if (saved) data = JSON.parse(saved);
-      } catch (e) {
-        console.log('Error loading:', e);
-      }
-    }
+function prevMonth() {
+currentMonthDate.setMonth(currentMonthDate.getMonth() - 1);
+updateMonth();
+display();
+}
 
-    function saveData() {
-      try {
-        localStorage.setItem('fasouliData', JSON.stringify(data));
-      } catch (e) {
-        alert('Error saving data');
-      }
-    }
+function nextMonth() {
+currentMonthDate.setMonth(currentMonthDate.getMonth() + 1);
+updateMonth();
+display();
+}
 
-    function formatDate(d) {
-      var date = new Date(d);
-      var m = '' + (date.getMonth() + 1);
-      var day = '' + date.getDate();
-      var y = date.getFullYear();
-      if (m.length < 2) m = '0' + m;
-      if (day.length < 2) day = '0' + day;
-      return [y, m, day].join('-');
-    }
+function currentMonth() {
+currentMonthDate = new Date();
+currentMonthDate.setDate(1);
+updateMonth();
+display();
+}
 
-    function updateMonth() {
-      var months = [
-        'January', 'February', 'March', 'April', 'May', 'June',
-        'July', 'August', 'September', 'October', 'November', 'December'
-      ];
-      document.getElementById('monthName').textContent =
-        months[currentMonthDate.getMonth()] + ' ' + currentMonthDate.getFullYear();
-    }
+function updateCategories() {
+var type = document.getElementById('type').value;
+var categorySelect = document.getElementById('category');
 
-    function prevMonth() {
-      currentMonthDate.setMonth(currentMonthDate.getMonth() - 1);
-      updateMonth();
-      display();
-    }
+var incomeCategories = [
+'Salary',
+'Freelance',
+'Business Income',
+'Investment Returns',
+'Rental Income',
+'Gifts Received',
+'Bonuses',
+'Other Income'
+];
 
-    function nextMonth() {
-      currentMonthDate.setMonth(currentMonthDate.getMonth() + 1);
-      updateMonth();
-      display();
-    }
+var expenseCategories = [
+'Food & Dining',
+'Groceries',
+'Transportation',
+'Utilities',
+'Rent/Mortgage',
+'Healthcare',
+'Entertainment',
+'Shopping',
+'Education',
+'Insurance',
+'Travel',
+'Subscriptions',
+'Personal Care',
+'Home Maintenance',
+'Other Expense'
+];
 
-    function currentMonth() {
-      currentMonthDate = new Date();
-      currentMonthDate.setDate(1);
-      updateMonth();
-      display();
-    }
+var categories = type === 'income' ? incomeCategories : expenseCategories;
 
-    function updateCategories() {
-      var type = document.getElementById('type').value;
-      var categorySelect = document.getElementById('category');
-      var incomeCategories = ['Salary', 'Freelance', 'Business Income', 'Investment', 'Gifts', 'Bonuses', 'Other'];
-      var expenseCategories = ['Food', 'Groceries', 'Transportation', 'Utilities', 'Rent', 'Healthcare', 'Entertainment', 'Shopping', 'Education', 'Insurance', 'Travel', 'Other'];
-      var categories = type === 'income' ? incomeCategories : expenseCategories;
-      categorySelect.innerHTML = '';
-      for (var i = 0; i < categories.length; i++) {
-        var option = document.createElement('option');
-        option.value = categories[i];
-        option.textContent = categories[i];
-        categorySelect.appendChild(option);
-      }
-    }
+categorySelect.innerHTML = '';
+for (var i = 0; i < categories.length; i++) {
+var option = document.createElement('option');
+option.value = categories[i];
+option.textContent = categories[i];
+categorySelect.appendChild(option);
+}
+}
 
-    function addTransaction() {
-      var type = document.getElementById('type').value;
-      var desc = document.getElementById('description').value.trim();
-      var amtInput = document.getElementById('amount').value;
-      var cat = document.getElementById('category').value;
-      var date = document.getElementById('date').value;
+function addTransaction() {
+var type = document.getElementById('type').value;
+var desc = document.getElementById('description').value.trim();
+var amtInput = document.getElementById('amount').value;
+var cat = document.getElementById('category').value;
+var date = document.getElementById('date').value;
 
-      if (!desc || !amtInput || !date) return alert('Please fill all fields');
-      var amt = parseFloat(amtInput);
+if (!desc) {
+alert('Please enter a description');
+return;
+}
 
-      data.push({ id: Date.now(), type: type, description: desc, amount: amt, category: cat, date: date });
-      saveData();
-      display();
+if (!amtInput || amtInput === '' || amtInput === '0' || parseFloat(amtInput) <= 0) {
+alert('Please enter a valid amount greater than 0');
+return;
+}
 
-      document.getElementById('description').value = '';
-      document.getElementById('amount').value = '';
-      document.getElementById('date').value = formatDate(new Date());
-    }
+if (!date) {
+alert('Please select a date');
+return;
+}
 
-    function deleteItem(id) {
-      if (confirm('Delete this transaction?')) {
-        data = data.filter(item => item.id !== id);
-        saveData();
-        display();
-      }
-    }
+var amt = parseFloat(amtInput);
 
-    function display() {
-      var start = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth(), 1);
-      var end = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() + 1, 0);
-      var monthData = data.filter(d => {
-        var itemDate = new Date(d.date);
-        return itemDate >= start && itemDate <= end;
-      });
+data.push({
+id: Date.now(),
+type: type,
+description: desc,
+amount: amt,
+category: cat,
+date: date
+});
 
-      var income = 0, expenses = 0;
-      monthData.forEach(i => {
-        if (i.type === 'income') income += i.amount; else expenses += i.amount;
-      });
+saveData();
+display();
 
-      document.getElementById('totalIncome').textContent = income.toLocaleString('el-GR', { style: 'currency', currency: 'EUR' });
-      document.getElementById('totalExpenses').textContent = expenses.toLocaleString('el-GR', { style: 'currency', currency: 'EUR' });
-      document.getElementById('profitLoss').textContent = (income - expenses).toLocaleString('el-GR', { style: 'currency', currency: 'EUR' });
+document.getElementById('description').value = '';
+document.getElementById('amount').value = '';
+document.getElementById('date').value = formatDate(new Date());
+}
 
-      var list = document.getElementById('list');
-      list.innerHTML = '';
-      if (monthData.length === 0) {
-        list.innerHTML = '<p class="empty-msg">No transactions this month</p>';
-        return;
-      }
+function deleteItem(id) {
+if (confirm('Delete this transaction?')) {
+var newData = [];
+for (var i = 0; i < data.length; i++) {
+if (data[i].id !== id) {
+newData.push(data[i]);
+}
+}
+data = newData;
+saveData();
+display();
+}
+}
 
-      monthData.sort((a, b) => new Date(b.date) - new Date(a.date));
-      monthData.forEach(item => {
-        var div = document.createElement('div');
-        div.className = 'transaction ' + item.type;
-        var sign = item.type === 'income' ? '+' : '-';
-        var dateStr = new Date(item.date).toLocaleDateString('el-GR');
-        div.innerHTML = `
-          <h4>${item.description}</h4>
-          <div class="details">${item.category} • ${dateStr}</div>
-          <div class="amount ${item.type}">${sign}${item.amount.toLocaleString('el-GR', { style: 'currency', currency: 'EUR' })}</div>
-          <button class="btn-delete" onclick="deleteItem(${item.id})">Delete</button>
-        `;
-        list.appendChild(div);
-      });
-    }
+function display() {
+var start = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth(), 1);
+var end = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() + 1, 0);
 
-    loadData();
-    document.getElementById('date').value = formatDate(new Date());
-    updateMonth();
-    updateCategories();
-    display();
-  </script>
+var monthData = [];
+for (var i = 0; i < data.length; i++) {
+var itemDate = new Date(data[i].date);
+if (itemDate >= start && itemDate <= end) {
+monthData.push(data[i]);
+}
+}
+
+// Separate income and expenses
+var incomeData = [];
+var expenseData = [];
+var income = 0;
+var expenses = 0;
+
+for (var i = 0; i < monthData.length; i++) {
+if (monthData[i].type === 'income') {
+incomeData.push(monthData[i]);
+income += monthData[i].amount;
+} else {
+expenseData.push(monthData[i]);
+expenses += monthData[i].amount;
+}
+}
+
+document.getElementById('totalIncome').textContent = '€' + income.toFixed(2);
+document.getElementById('totalExpenses').textContent = '€' + expenses.toFixed(2);
+document.getElementById('profitLoss').textContent = '€' + (income - expenses).toFixed(2);
+
+// Display all transactions sorted by date
+var list = document.getElementById('list');
+list.innerHTML = '';
+
+if (monthData.length === 0) {
+list.innerHTML = '<p class="empty-msg">No transactions this month</p>';
+return;
+}
+
+monthData.sort(function(a, b) {
+return new Date(b.date) - new Date(a.date);
+});
+
+for (var i = 0; i < monthData.length; i++) {
+var item = monthData[i];
+var div = document.createElement('div');
+div.className = 'transaction ' + item.type;
+var sign = item.type === 'income' ? '+' : '-';
+var dateStr = new Date(item.date).toLocaleDateString();
+
+div.innerHTML =
+'<h4>' + item.description + '</h4>' +
+'<div class="details">' + item.category + ' • ' + dateStr + '</div>' +
+'<div class="amount ' + item.type + '">' + sign + '€' + item.amount.toFixed(2) + '</div>' +
+'<button class="btn-delete" onclick="deleteItem(' + item.id + ')">Delete</button>';
+
+list.appendChild(div);
+}
+}
+
+function setExportDates() {
+// Set default export dates to current month
+var start = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth(), 1);
+var end = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() + 1, 0);
+document.getElementById('exportStartDate').value = formatDate(start);
+document.getElementById('exportEndDate').value = formatDate(end);
+updateExportInfo();
+}
+
+function updateExportInfo() {
+var startDate = document.getElementById('exportStartDate').value;
+var endDate = document.getElementById('exportEndDate').value;
+
+if (!startDate || !endDate) {
+document.getElementById('exportInfo').textContent = 'Select date range to export';
+return;
+}
+    
+var start = new Date(startDate);
+var end = new Date(endDate);
+    
+var count = 0;
+for (var i = 0; i < data.length; i++) {
+var itemDate = new Date(data[i].date);
+if (itemDate >= start && itemDate <= end) {
+count++;
+}
+}
+    
+document.getElementById('exportInfo').textContent = count + ' transactions in selected range';
+}
+
+function exportToExcel() {
+var startDate = document.getElementById('exportStartDate').value;
+var endDate = document.getElementById('exportEndDate').value;
+
+if (!startDate || !endDate) {
+alert('Please select start and end dates');
+return;
+}
+
+var start = new Date(startDate);
+var end = new Date(endDate);
+
+if (start > end) {
+alert('Start date must be before end date');
+return;
+}
+
+var rangeData = [];
+for (var i = 0; i < data.length; i++) {
+var itemDate = new Date(data[i].date);
+if (itemDate >= start && itemDate <= end) {
+rangeData.push(data[i]);
+}
+}
+
+if (rangeData.length === 0) {
+alert('No transactions found in selected date range');
+return;
+}
+
+// Sort by date
+rangeData.sort(function(a, b) {
+return new Date(a.date) - new Date(b.date);
+});
+
+// Create CSV content
+var csv = 'Date,Type,Category,Description,Amount\n';
+for (var i = 0; i < rangeData.length; i++) {
+var item = rangeData[i];
+var dateStr = item.date;
+var type = item.type === 'income' ? 'Income' : 'Expense';
+var desc = '"' + item.description.replace(/"/g, '""') + '"';
+var amount = item.amount.toFixed(2);
+csv += dateStr + ',' + type + ',' + item.category + ',' + desc + ',' + amount + '\n';
+}
+
+// Calculate totals
+var income = 0;
+var expenses = 0;
+for (var i = 0; i < rangeData.length; i++) {
+if (rangeData[i].type === 'income') {
+income += rangeData[i].amount;
+} else {
+expenses += rangeData[i].amount;
+}
+}
+
+// Add summary
+csv += '\n';
+csv += 'SUMMARY\n';
+csv += 'Total Income,,,,€' + income.toFixed(2) + '\n';
+csv += 'Total Expenses,,,,€' + expenses.toFixed(2) + '\n';
+csv += 'Profit & Loss,,,,€' + (income - expenses).toFixed(2) + '\n';
+
+// Download file
+var filename = 'Fasouli_' + startDate + '_to_' + endDate + '.csv';
+
+var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+var link = document.createElement('a');
+if (link.download !== undefined) {
+var url = URL.createObjectURL(blob);
+link.setAttribute('href', url);
+link.setAttribute('download', filename);
+link.style.visibility = 'hidden';
+document.body.appendChild(link);
+link.click();
+document.body.removeChild(link);
+}
+
+alert('Exported ' + rangeData.length + ' transactions from ' + startDate + ' to ' + endDate);
+}
+
+// Add event listeners for date changes
+document.addEventListener('DOMContentLoaded', function() {
+document.getElementById('exportStartDate').addEventListener('change', updateExportInfo);
+document.getElementById('exportEndDate').addEventListener('change', updateExportInfo);
+});
+
+loadData();
+document.getElementById('date').value = formatDate(new Date());
+updateMonth();
+updateCategories();
+display();
+setExportDates();
+</script>
 </body>
 </html>
