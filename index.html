@@ -607,18 +607,19 @@
             border-color: var(--accent-expense);
         }
 
-        .receipt-thumbnail {
-            margin-top: 12px;
-            max-width: 200px;
-            border-radius: 8px;
-            border: var(--border-width) solid var(--border-color);
+        .receipt-icon {
+            display: inline-block;
+            margin-left: 8px;
+            font-size: 1.1em;
             cursor: pointer;
+            opacity: 0.7;
             transition: var(--transition);
+            vertical-align: middle;
         }
 
-        .receipt-thumbnail:hover {
-            transform: scale(1.05);
-            box-shadow: var(--shadow-lg);
+        .receipt-icon:hover {
+            opacity: 1;
+            transform: scale(1.2);
         }
 
         .empty-state {
@@ -1142,19 +1143,19 @@
                     day: 'numeric'
                 });
 
-                var htmlContent = 
-                    '<div class="transaction-header">' +
-                        '<h4 class="transaction-title">' + item.description + '</h4>' +
-                        '<div class="transaction-amount ' + item.type + '">' + sign + '€' + item.amount.toFixed(2) + '</div>' +
-                    '</div>' +
-                    '<div class="transaction-details">' + item.category + ' • ' + dateStr + '</div>';
-                
-                // Add receipt thumbnail if available
+                // Add receipt icon next to title if available
+                var titleWithIcon = item.description;
                 if (item.receipt) {
-                    htmlContent += '<img src="' + item.receipt + '" alt="Receipt" class="receipt-thumbnail" onclick="window.open(this.src)" title="Click to view full size">';
+                    titleWithIcon += '<span class="receipt-icon" onclick="window.open(\'' + item.receipt.replace(/'/g, "\\'") + '\')" title="View receipt">📎</span>';
                 }
                 
-                htmlContent += '<button class="btn-delete" onclick="deleteItem(' + item.id + ')">Delete</button>';
+                var htmlContent = 
+                    '<div class="transaction-header">' +
+                        '<h4 class="transaction-title">' + titleWithIcon + '</h4>' +
+                        '<div class="transaction-amount ' + item.type + '">' + sign + '€' + item.amount.toFixed(2) + '</div>' +
+                    '</div>' +
+                    '<div class="transaction-details">' + item.category + ' • ' + dateStr + '</div>' +
+                    '<button class="btn-delete" onclick="deleteItem(' + item.id + ')">Delete</button>';
                 
                 div.innerHTML = htmlContent;
 
