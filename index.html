@@ -429,6 +429,7 @@
             border: var(--border-width) solid var(--border-color);
             display: block;
             margin: 0 auto;
+            margin-bottom: 12px;
         }
 
         .ocr-status {
@@ -1386,10 +1387,20 @@
                     if (extractedData.vendor) message += 'Vendor: ' + extractedData.vendor + ' ';
                     if (extractedData.date) message += 'Date: ' + extractedData.date;
                     statusEl.textContent = message;
+                    
+                    // Auto-clear preview after 3 seconds
+                    setTimeout(function() {
+                        clearReceiptPreview();
+                    }, 3000);
                 } else {
                     statusEl.className = 'ocr-status error';
                     statusEl.textContent = '⚠️ Text extracted but no data found. Check console for details. Please fill manually.';
                     console.log('Raw OCR text:', text);
+                    
+                    // Auto-clear preview after 5 seconds even on error
+                    setTimeout(function() {
+                        clearReceiptPreview();
+                    }, 5000);
                 }
             }).catch(function(error) {
                 console.error('OCR Error:', error);
@@ -1487,6 +1498,27 @@
             }
 
             return data;
+        }
+
+        function clearReceiptPreview() {
+            const previewDiv = document.getElementById('receiptPreview');
+            const imgElement = document.getElementById('receiptImage');
+            const statusEl = document.getElementById('ocrStatus');
+            
+            // Hide preview
+            previewDiv.classList.add('hidden');
+            imgElement.style.display = 'none';
+            statusEl.style.display = 'none';
+            
+            // Clear image source
+            imgElement.src = '';
+            statusEl.textContent = '';
+            
+            // Reset file inputs
+            document.getElementById('receiptCameraInput').value = '';
+            document.getElementById('receiptFileInput').value = '';
+            
+            console.log('Receipt preview cleared');
         }
 
         function prefillForm(extractedData) {
