@@ -412,6 +412,24 @@
             background: var(--bg-secondary);
         }
 
+        .btn-clear-receipt {
+            margin-top: 12px;
+            padding: 10px 20px;
+            background: transparent;
+            border: var(--border-width) solid var(--accent-expense);
+            color: var(--accent-expense);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
+        }
+
+        .btn-clear-receipt:hover {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
         .receipt-preview {
             margin-top: 20px;
             text-align: center;
@@ -745,6 +763,7 @@
             <div class="receipt-preview hidden" id="receiptPreview">
                 <img id="receiptImage" src="" alt="Receipt preview" style="display:none;">
                 <div class="ocr-status" id="ocrStatus" style="display:none;"></div>
+                <button class="btn-clear-receipt" onclick="clearReceiptPreview()" style="display:none;" id="btnClearReceipt">Clear Receipt</button>
             </div>
         </div>
 
@@ -1430,21 +1449,14 @@
                     if (extractedData.vendor) message += 'Vendor: ' + extractedData.vendor + ' ';
                     if (extractedData.date) message += 'Date: ' + extractedData.date;
                     statusEl.textContent = message;
-                    
-                    // Auto-clear preview only (keep receipt image for transaction)
-                    setTimeout(function() {
-                        clearReceiptPreviewOnly();
-                    }, 3000);
                 } else {
                     statusEl.className = 'ocr-status error';
                     statusEl.textContent = '⚠️ Text extracted but no data found. Check console for details. Please fill manually.';
                     console.log('Raw OCR text:', text);
-                    
-                    // Auto-clear preview after 5 seconds even on error
-                    setTimeout(function() {
-                        clearReceiptPreviewOnly();
-                    }, 5000);
                 }
+                
+                // Show Clear Receipt button after processing
+                document.getElementById('btnClearReceipt').style.display = 'block';
             }).catch(function(error) {
                 console.error('OCR Error:', error);
                 statusEl.className = 'ocr-status error';
@@ -1567,9 +1579,27 @@
 
         function clearReceiptPreview() {
             // Clear both preview AND currentReceiptImage
-            clearReceiptPreviewOnly();
+            const previewDiv = document.getElementById('receiptPreview');
+            const imgElement = document.getElementById('receiptImage');
+            const statusEl = document.getElementById('ocrStatus');
+            const btnClear = document.getElementById('btnClearReceipt');
+            
+            // Hide everything
+            previewDiv.classList.add('hidden');
+            imgElement.style.display = 'none';
+            statusEl.style.display = 'none';
+            btnClear.style.display = 'none';
+            
+            // Clear data
+            imgElement.src = '';
+            statusEl.textContent = '';
             currentReceiptImage = null;
-            console.log('Receipt preview and image data cleared');
+            
+            // Reset file inputs
+            document.getElementById('receiptCameraInput').value = '';
+            document.getElementById('receiptFileInput').value = '';
+            
+            console.log('Receipt preview and image data cleared completely');
         }
 
         function prefillForm(extractedData) {
