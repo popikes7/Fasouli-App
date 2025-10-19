@@ -607,6 +607,20 @@
             border-color: var(--accent-expense);
         }
 
+        .receipt-thumbnail {
+            margin-top: 12px;
+            max-width: 200px;
+            border-radius: 8px;
+            border: var(--border-width) solid var(--border-color);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .receipt-thumbnail:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-lg);
+        }
+
         .empty-state {
             text-align: center;
             padding: 48px 20px;
@@ -1031,14 +1045,21 @@
             }
 
             var amt = parseFloat(amtInput);
-            data.push({
+            var transaction = {
                 id: Date.now(),
                 type: type,
                 description: desc,
                 amount: amt,
                 category: cat,
                 date: date
-            });
+            };
+            
+            // Attach receipt image if available
+            if (currentReceiptImage) {
+                transaction.receipt = currentReceiptImage;
+            }
+            
+            data.push(transaction);
 
             saveData();
             display();
@@ -1046,6 +1067,10 @@
             document.getElementById('description').value = '';
             document.getElementById('amount').value = '';
             document.getElementById('date').value = formatDate(new Date());
+            
+            // Clear receipt preview and reset
+            clearReceiptPreview();
+            currentReceiptImage = null;
         }
 
         function deleteItem(id) {
@@ -1059,6 +1084,10 @@
                 data = newData;
                 saveData();
                 display();
+                
+                // Clear receipt preview when deleting
+                clearReceiptPreview();
+                currentReceiptImage = null;
             }
         }
 
@@ -1113,13 +1142,21 @@
                     day: 'numeric'
                 });
 
-                div.innerHTML = 
+                var htmlContent = 
                     '<div class="transaction-header">' +
                         '<h4 class="transaction-title">' + item.description + '</h4>' +
                         '<div class="transaction-amount ' + item.type + '">' + sign + '€' + item.amount.toFixed(2) + '</div>' +
                     '</div>' +
-                    '<div class="transaction-details">' + item.category + ' • ' + dateStr + '</div>' +
-                    '<button class="btn-delete" onclick="deleteItem(' + item.id + ')">Delete</button>';
+                    '<div class="transaction-details">' + item.category + ' • ' + dateStr + '</div>';
+                
+                // Add receipt thumbnail if available
+                if (item.receipt) {
+                    htmlContent += '<img src="' + item.receipt + '" alt="Receipt" class="receipt-thumbnail" onclick="window.open(this.src)" title="Click to view full size">';
+                }
+                
+                htmlContent += '<button class="btn-delete" onclick="deleteItem(' + item.id + ')">Delete</button>';
+                
+                div.innerHTML = htmlContent;
 
                 list.appendChild(div);
             }
@@ -1236,6 +1273,9 @@
         // Configure PDF.js worker
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
+        // Global variable to store current receipt image
+        var currentReceiptImage = null;
+
         // Receipt OCR Functions
         function handleReceiptUpload(event) {
             const file = event.target.files[0];
@@ -1265,6 +1305,7 @@
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     console.log('Image loaded into memory');
+                    currentReceiptImage = e.target.result; // Store for attaching to transaction
                     imgElement.src = e.target.result;
                     statusEl.textContent = '✅ Image loaded! Starting OCR...';
                     
@@ -1316,6 +1357,7 @@
                         page.render(renderContext).promise.then(function() {
                             // Convert canvas to image
                             const imageData = canvas.toDataURL('image/png');
+                            currentReceiptImage = imageData; // Store for attaching to transaction
                             imgElement.src = imageData;
                             
                             statusEl.textContent = '✅ PDF converted! Starting OCR...';
