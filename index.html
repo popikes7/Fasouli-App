@@ -1431,9 +1431,9 @@
                     if (extractedData.date) message += 'Date: ' + extractedData.date;
                     statusEl.textContent = message;
                     
-                    // Auto-clear preview after 3 seconds
+                    // Auto-clear preview only (keep receipt image for transaction)
                     setTimeout(function() {
-                        clearReceiptPreview();
+                        clearReceiptPreviewOnly();
                     }, 3000);
                 } else {
                     statusEl.className = 'ocr-status error';
@@ -1442,7 +1442,7 @@
                     
                     // Auto-clear preview after 5 seconds even on error
                     setTimeout(function() {
-                        clearReceiptPreview();
+                        clearReceiptPreviewOnly();
                     }, 5000);
                 }
             }).catch(function(error) {
@@ -1543,7 +1543,8 @@
             return data;
         }
 
-        function clearReceiptPreview() {
+        function clearReceiptPreviewOnly() {
+            // Only clear the visual preview, keep currentReceiptImage for transaction attachment
             const previewDiv = document.getElementById('receiptPreview');
             const imgElement = document.getElementById('receiptImage');
             const statusEl = document.getElementById('ocrStatus');
@@ -1553,7 +1554,7 @@
             imgElement.style.display = 'none';
             statusEl.style.display = 'none';
             
-            // Clear image source
+            // Clear visual elements but DON'T clear currentReceiptImage
             imgElement.src = '';
             statusEl.textContent = '';
             
@@ -1561,7 +1562,14 @@
             document.getElementById('receiptCameraInput').value = '';
             document.getElementById('receiptFileInput').value = '';
             
-            console.log('Receipt preview cleared');
+            console.log('Receipt preview cleared (image kept for transaction)');
+        }
+
+        function clearReceiptPreview() {
+            // Clear both preview AND currentReceiptImage
+            clearReceiptPreviewOnly();
+            currentReceiptImage = null;
+            console.log('Receipt preview and image data cleared');
         }
 
         function prefillForm(extractedData) {
