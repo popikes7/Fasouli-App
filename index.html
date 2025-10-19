@@ -1405,11 +1405,29 @@
                 date: null
             };
 
-            // Extract amount - look for currency patterns
+            // Extract amount - prioritize Greek total keywords first, then English, then generic
             const amountPatterns = [
+                // Greek patterns (highest priority)
+                /πληρωτέο\s*ποσ[όo][:\s]*€?\s*(\d+[.,]\d{2})/i,
+                /πληρωτεο\s*ποσο[:\s]*€?\s*(\d+[.,]\d{2})/i,
+                /συνολο[:\s]*€?\s*(\d+[.,]\d{2})/i,
+                /σύνολο[:\s]*€?\s*(\d+[.,]\d{2})/i,
+                /τελικ[όo]\s*ποσ[όo][:\s]*€?\s*(\d+[.,]\d{2})/i,
+                /τελικο\s*ποσο[:\s]*€?\s*(\d+[.,]\d{2})/i,
+                /σύνολο\s*πληρωμής[:\s]*€?\s*(\d+[.,]\d{2})/i,
+                /συνολο\s*πληρωμης[:\s]*€?\s*(\d+[.,]\d{2})/i,
+                /καθαρ[ήh]\s*αξ[ίi]α[:\s]*€?\s*(\d+[.,]\d{2})/i,
+                /καθαρη\s*αξια[:\s]*€?\s*(\d+[.,]\d{2})/i,
+                
+                // English patterns (medium priority)
                 /total[:\s]*€?\s*(\d+[.,]\d{2})/i,
+                /amount\s*due[:\s]*€?\s*(\d+[.,]\d{2})/i,
+                /grand\s*total[:\s]*€?\s*(\d+[.,]\d{2})/i,
                 /amount[:\s]*€?\s*(\d+[.,]\d{2})/i,
                 /sum[:\s]*€?\s*(\d+[.,]\d{2})/i,
+                /balance[:\s]*€?\s*(\d+[.,]\d{2})/i,
+                
+                // Generic patterns (lowest priority - last resort)
                 /€\s*(\d+[.,]\d{2})/,
                 /(\d+[.,]\d{2})\s*€/,
                 /(\d+[.,]\d{2})/
@@ -1419,6 +1437,7 @@
                 const match = text.match(pattern);
                 if (match) {
                     data.amount = parseFloat(match[1].replace(',', '.'));
+                    console.log('Amount found with pattern:', pattern, '→', data.amount);
                     break;
                 }
             }
