@@ -1,1667 +1,440 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <link rel="apple-touch-icon" href="icon.png">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Fasouli">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fasouli - Finance Dashboard</title>
-    <script src='https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js'></script>
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js'></script>
-    <style>
-        :root {
-            /* Default theme variables (Modern Dashboard) */
-            --bg-primary: #0f172a;
-            --bg-secondary: #1e293b;
-            --bg-tertiary: #0f172a;
-            --border-color: #334155;
-            --border-hover: #475569;
-            --text-primary: #f8fafc;
-            --text-secondary: #e2e8f0;
-            --text-muted: #94a3b8;
-            --text-disabled: #64748b;
-            --accent-income: #10b981;
-            --accent-expense: #ef4444;
-            --accent-balance: #6366f1;
-            --btn-primary: #10b981;
-            --btn-primary-hover: #059669;
-            --btn-secondary: #6366f1;
-            --btn-secondary-hover: #4f46e5;
-            --btn-nav: #334155;
-            --btn-nav-hover: #475569;
-            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
-            --backdrop-blur: 0px;
-            --card-bg-opacity: 1;
-            --border-width: 1px;
-            --border-radius: 12px;
-            --transition: all 0.2s ease;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Roboto', sans-serif;
-            background: var(--bg-primary);
-            min-height: 100vh;
-            padding: 20px;
-            color: var(--text-secondary);
-            line-height: 1.6;
-            position: relative;
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.5s ease;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        /* Theme Selector */
-        .theme-selector {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-        }
-
-        .theme-selector select {
-            background: var(--bg-secondary);
-            color: var(--text-primary);
-            border: var(--border-width) solid var(--border-color);
-            border-radius: 8px;
-            padding: 10px 16px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: var(--transition);
-            backdrop-filter: blur(var(--backdrop-blur));
-            -webkit-backdrop-filter: blur(var(--backdrop-blur));
-        }
-
-        .theme-selector select:hover {
-            border-color: var(--border-hover);
-        }
-
-        .theme-selector select:focus {
-            outline: none;
-            border-color: var(--btn-secondary);
-        }
-
-        .theme-selector select option {
-            background: var(--bg-secondary);
-            color: var(--text-primary);
-        }
-
-        /* Header Section */
-        .header {
-            margin-bottom: 32px;
-            margin-top: 60px;
-        }
-
-        .header h1 {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 8px;
-            letter-spacing: -0.025em;
-        }
-
-        .header p {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-        }
-
-        /* Month Navigation */
-        .month-nav {
-            background: var(--bg-secondary);
-            padding: 20px 24px;
-            border-radius: var(--border-radius);
-            margin-bottom: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 16px;
-            border: var(--border-width) solid var(--border-color);
-            backdrop-filter: blur(var(--backdrop-blur));
-            -webkit-backdrop-filter: blur(var(--backdrop-blur));
-            box-shadow: var(--shadow-md);
-            transition: var(--transition);
-        }
-
-        .month-nav h2 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin: 0;
-        }
-
-        .month-controls {
-            display: flex;
-            gap: 12px;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: var(--transition);
-            font-family: inherit;
-            backdrop-filter: blur(var(--backdrop-blur));
-            -webkit-backdrop-filter: blur(var(--backdrop-blur));
-        }
-
-        .btn-nav {
-            background: var(--btn-nav);
-            color: var(--text-secondary);
-            width: 40px;
-            padding: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: var(--border-width) solid var(--border-color);
-        }
-
-        .btn-nav:hover {
-            background: var(--btn-nav-hover);
-        }
-
-        .btn-primary {
-            background: var(--btn-primary);
-            color: white;
-            border: var(--border-width) solid transparent;
-        }
-
-        .btn-primary:hover {
-            background: var(--btn-primary-hover);
-        }
-
-        /* Stats Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            margin-bottom: 24px;
-        }
-
-        .stat-card {
-            background: var(--bg-secondary);
-            padding: 24px;
-            border-radius: var(--border-radius);
-            border: var(--border-width) solid var(--border-color);
-            transition: var(--transition);
-            backdrop-filter: blur(var(--backdrop-blur));
-            -webkit-backdrop-filter: blur(var(--backdrop-blur));
-            box-shadow: var(--shadow-md);
-        }
-
-        .stat-card:hover {
-            transform: translateY(-2px);
-            border-color: var(--border-hover);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .stat-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 12px;
-        }
-
-        .stat-label {
-            font-size: 0.85rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--text-muted);
-        }
-
-        .stat-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.25rem;
-        }
-
-        .icon-income {
-            background: rgba(16, 185, 129, 0.1);
-            color: var(--accent-income);
-        }
-
-        .icon-expense {
-            background: rgba(239, 68, 68, 0.1);
-            color: var(--accent-expense);
-        }
-
-        .icon-profit {
-            background: rgba(99, 102, 241, 0.1);
-            color: var(--accent-balance);
-        }
-
-        .stat-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            letter-spacing: -0.025em;
-        }
-
-        .stat-card.income .stat-value {
-            color: var(--accent-income);
-        }
-
-        .stat-card.expense .stat-value {
-            color: var(--accent-expense);
-        }
-
-        .stat-card.profit .stat-value {
-            color: var(--accent-balance);
-        }
-
-        /* Form Section */
-        .form-section {
-            background: var(--bg-secondary);
-            padding: 28px;
-            border-radius: var(--border-radius);
-            margin-bottom: 24px;
-            border: var(--border-width) solid var(--border-color);
-            backdrop-filter: blur(var(--backdrop-blur));
-            -webkit-backdrop-filter: blur(var(--backdrop-blur));
-            box-shadow: var(--shadow-md);
-        }
-
-        .form-section h2 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 24px;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .form-group label {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-            letter-spacing: 0.025em;
-        }
-
-        .form-group input,
-        .form-group select {
-            background: var(--bg-tertiary);
-            border: var(--border-width) solid var(--border-color);
-            border-radius: 8px;
-            padding: 12px 16px;
-            font-size: 0.95rem;
-            color: var(--text-secondary);
-            font-family: inherit;
-            transition: var(--transition);
-        }
-
-        .form-group input:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: var(--btn-secondary);
-            background: var(--bg-secondary);
-        }
-
-        .form-group input::placeholder {
-            color: var(--text-disabled);
-        }
-
-        .form-group select option {
-            background: var(--bg-secondary);
-            color: var(--text-secondary);
-        }
-
-        .btn-submit {
-            width: 100%;
-            background: var(--btn-secondary);
-            color: white;
-            padding: 14px 24px;
-            border: var(--border-width) solid transparent;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .btn-submit:hover {
-            background: var(--btn-secondary-hover);
-        }
-
-        /* Receipt Scanner Section */
-        .receipt-section {
-            background: var(--bg-secondary);
-            padding: 28px;
-            border-radius: var(--border-radius);
-            margin-bottom: 24px;
-            border: var(--border-width) solid var(--border-color);
-            backdrop-filter: blur(var(--backdrop-blur));
-            -webkit-backdrop-filter: blur(var(--backdrop-blur));
-            box-shadow: var(--shadow-md);
-        }
-
-        .receipt-section h2 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 20px;
-        }
-
-        .receipt-buttons {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .btn-receipt {
-            padding: 14px 20px;
-            border: var(--border-width) solid var(--border-color);
-            border-radius: 8px;
-            font-size: 0.95rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: var(--transition);
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .btn-receipt:hover {
-            border-color: var(--btn-secondary);
-            background: var(--bg-secondary);
-        }
-
-        .btn-clear-receipt {
-            margin-top: 12px;
-            padding: 10px 20px;
-            background: transparent;
-            border: var(--border-width) solid var(--accent-expense);
-            color: var(--accent-expense);
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: var(--transition);
-            width: 100%;
-        }
-
-        .btn-clear-receipt:hover {
-            background: rgba(239, 68, 68, 0.1);
-        }
-
-        .receipt-preview {
-            margin-top: 20px;
-            text-align: center;
-            display: block !important;
-        }
-
-        .receipt-preview.hidden {
-            display: none !important;
-        }
-
-        .receipt-preview img {
-            max-width: 100%;
-            max-height: 300px;
-            border-radius: 8px;
-            border: var(--border-width) solid var(--border-color);
-            display: block;
-            margin: 0 auto;
-            margin-bottom: 12px;
-        }
-
-        .ocr-status {
-            margin-top: 12px;
-            padding: 12px;
-            border-radius: 8px;
-            background: var(--bg-tertiary);
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            text-align: center;
-        }
-
-        .ocr-status.processing {
-            color: var(--btn-secondary);
-        }
-
-        .ocr-status.success {
-            color: var(--accent-income);
-        }
-
-        .ocr-status.error {
-            color: var(--accent-expense);
-        }
-
-        #receiptFileInput,
-        #receiptCameraInput {
-            display: none;
-        }
-
-        /* Export Section */
-        .export-section {
-            background: var(--bg-secondary);
-            padding: 28px;
-            border-radius: var(--border-radius);
-            margin-bottom: 24px;
-            border: var(--border-width) solid var(--border-color);
-            backdrop-filter: blur(var(--backdrop-blur));
-            -webkit-backdrop-filter: blur(var(--backdrop-blur));
-            box-shadow: var(--shadow-md);
-        }
-
-        .export-section h3 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 20px;
-        }
-
-        .export-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin-bottom: 20px;
-        }
-
-        .btn-export {
-            width: 100%;
-            background: var(--btn-primary);
-            color: white;
-            padding: 14px 24px;
-            border: var(--border-width) solid transparent;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            margin-bottom: 12px;
-        }
-
-        .btn-export:hover {
-            background: var(--btn-primary-hover);
-        }
-
-        .export-info {
-            text-align: center;
-            color: var(--text-muted);
-            font-size: 0.9rem;
-        }
-
-        /* Transactions Section */
-        .transactions-section {
-            background: var(--bg-secondary);
-            padding: 28px;
-            border-radius: var(--border-radius);
-            border: var(--border-width) solid var(--border-color);
-            backdrop-filter: blur(var(--backdrop-blur));
-            -webkit-backdrop-filter: blur(var(--backdrop-blur));
-            box-shadow: var(--shadow-md);
-        }
-
-        .transactions-section h2 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 20px;
-        }
-
-        .transaction-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .transaction-item {
-            background: var(--bg-tertiary);
-            padding: 20px;
-            border-radius: 8px;
-            border-left: 4px solid var(--border-color);
-            transition: var(--transition);
-            backdrop-filter: blur(var(--backdrop-blur));
-            -webkit-backdrop-filter: blur(var(--backdrop-blur));
-        }
-
-        .transaction-item:hover {
-            background: var(--bg-secondary);
-        }
-
-        .transaction-item.income {
-            border-left-color: var(--accent-income);
-        }
-
-        .transaction-item.expense {
-            border-left-color: var(--accent-expense);
-        }
-
-        .transaction-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: 8px;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .transaction-title {
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .transaction-amount {
-            font-size: 1.25rem;
-            font-weight: 700;
-            letter-spacing: -0.025em;
-        }
-
-        .transaction-amount.income {
-            color: var(--accent-income);
-        }
-
-        .transaction-amount.expense {
-            color: var(--accent-expense);
-        }
-
-        .transaction-details {
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            margin-bottom: 12px;
-        }
-
-        .btn-delete {
-            background: transparent;
-            border: var(--border-width) solid var(--border-color);
-            color: var(--accent-expense);
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .btn-delete:hover {
-            background: rgba(239, 68, 68, 0.1);
-            border-color: var(--accent-expense);
-        }
-
-        .receipt-icon {
-            display: inline-block;
-            margin-left: 8px;
-            font-size: 1.1em;
-            cursor: pointer;
-            opacity: 0.7;
-            transition: var(--transition);
-            vertical-align: middle;
-        }
-
-        .receipt-icon:hover {
-            opacity: 1;
-            transform: scale(1.2);
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 48px 20px;
-            color: var(--text-disabled);
-        }
-
-        .empty-state-icon {
-            font-size: 3rem;
-            margin-bottom: 16px;
-            opacity: 0.5;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .month-nav {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .month-nav h2 {
-                text-align: center;
-            }
-
-            .month-controls {
-                justify-content: center;
-            }
-
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .export-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .transaction-header {
-                flex-direction: column;
-            }
-
-            .transaction-amount {
-                align-self: flex-start;
-            }
-
-            .theme-selector {
-                position: static;
-                margin-bottom: 20px;
-                display: flex;
-                justify-content: center;
-            }
-
-            .header {
-                margin-top: 0;
-            }
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ops/Finance Support – Case Study</title>
+  <style>
+    :root{
+      --bg:#0b0f1a; --card:#0f172a; --text:#e5e7eb; --muted:#a3a3a3;
+      --line:rgba(255,255,255,.08); --accent:#7c3aed; --error:#f87171; --success:#22c55e;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family: ui-sans-serif, system-ui, sans-serif;
+      background: radial-gradient(1200px 600px at 20% 10%, rgba(124,58,237,.25), transparent 60%),
+                  radial-gradient(900px 500px at 80% 20%, rgba(34,197,94,.18), transparent 55%),
+                  var(--bg);
+      color:var(--text); line-height:1.45;
+    }
+    .wrap{max-width:1100px; margin:0 auto; padding:40px 16px 80px}
+    .hero{
+      padding:28px 24px; border:1px solid var(--line); border-radius:18px;
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      box-shadow: 0 10px 40px rgba(0,0,0,.35);
+    }
+    .badge{
+      display:inline-flex; align-items:center; border:1px solid var(--line);
+      padding:6px 12px; border-radius:999px; color:var(--muted); font-size:12px;
+      background:rgba(255,255,255,.02); margin-bottom: 16px;
+    }
+    h1{margin:0 0 8px; font-size:28px; letter-spacing:.2px}
+    .sub{margin:0 0 24px; color:var(--muted); max-width:70ch}
+    .card{
+      border:1px solid var(--line); background:rgba(255,255,255,.02);
+      border-radius:16px; padding:20px; margin-bottom: 16px;
+    }
+    .card h2{margin:0 0 12px; font-size:18px; color:#fff}
+    .form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .full{grid-column: 1 / -1}
+    label{display:block; font-size:13px; color:var(--muted); margin-bottom:6px; font-weight: 500;}
+    input, textarea{
+      width:100%; padding:12px; border-radius:12px; border:1px solid var(--line);
+      background:rgba(0,0,0,.25); color:var(--text); outline:none; font-size: 14px;
+    }
+    input:focus, textarea:focus{border-color: var(--accent)}
+    textarea{min-height:120px; resize:vertical}
+    .hint{font-size:12px; color:var(--accent); font-style:italic; margin-bottom: 8px;}
+    .err-msg{color: var(--error); font-size:12px; margin-top:4px; display:none;}
+    .btnrow{display:flex; gap:12px; flex-wrap:wrap; margin-top:20px}
+    .btn{
+      cursor:pointer; text-decoration:none; border:1px solid var(--line);
+      padding:12px 20px; border-radius:12px; font-weight: 600;
+      transition:.15s ease; font-size: 14px;
+    }
+    .btn.primary{background: var(--accent); color:#fff; border:none}
+    .btn.secondary{background: rgba(255,255,255,.05); color:var(--text)}
+    .status{ margin-top:16px; padding:14px; border-radius:12px; display:none; font-weight: 500;}
+    .status.ok{background:rgba(34,197,94,.15); color:var(--success); border:1px solid var(--success)}
+    .status.err{background:rgba(239,68,68,.15); color:var(--error); border:1px solid var(--error)}
+    @media (max-width:860px){ .form-grid{grid-template-columns:1fr} }
+  </style>
 </head>
 <body>
-    <div class="theme-selector">
-        <select id="themeSelector" onchange="changeTheme(this.value)">
-            <option value="dashboard">Modern Dashboard</option>
-            <option value="glassmorphism">Glassmorphism</option>
-            <option value="neumorphism">Neumorphism</option>
-        </select>
+  <div class="wrap">
+    <div class="hero">
+      <span class="badge">REBORRN • Ops/Finance Support • Case Study</span>
+      <h1>Expense Operations Portal</h1>
+      <p class="sub">Please complete all deliverables directly in the fields below. Your progress is automatically saved as a draft.</p>
+
+      <form id="evalForm">
+        <div class="card">
+          <h2>Candidate Identity</h2>
+          <div class="form-grid">
+            <div>
+              <label>Full Name *</label>
+              <input required name="fullName" type="text" placeholder="e.g. John Doe" value="John Doe">
+              <div class="err-msg" id="err-fullName">Name is required (min 3 chars).</div>
+            </div>
+            <div>
+              <label>Email *</label>
+              <input required name="email" type="email" placeholder="name@example.com" value="john.doe@example.com">
+              <div class="err-msg" id="err-email">A valid email is required.</div>
+            </div>
+            <div>
+              <label>Phone (optional)</label>
+              <input name="phone" type="text" placeholder="+1 ..." value="+1 234-567-8901">
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Case Study Deliverables</h2>
+          <div class="form-grid">
+            <div class="full">
+              <label>Deliverable 1 — Priority Plan (P0/P1/P2) *</label>
+              <div class="hint">Include table-like structure: Item | Priority | Reason | ETA | Next step</div>
+              <textarea name="priorityPlan">Item | Priority | Reason | ETA | Next step
+
+1. Resolve SaaS subscription payment to avoid service suspension | P0 | Critical tool for daily operations, potential productivity loss if suspended | 1 business day | Contact finance team for immediate payment approval and process the transaction.
+
+2. Clarify VAT discrepancies with hotel vendor | P1 | Conference expenses are essential for team development and skill building | 3 business days | Send email requesting detailed VAT breakdown and supporting documents.
+
+3. Address missing VAT on team dinner receipt | P1 | Promotes fair procurement practices and compliance | 2 business days | Reach out to employee for additional documentation or assess if reimbursement can proceed without VAT if within policy thresholds.
+
+4. Secure detailed receipt for taxi expense | P2 | Ensures accountability and prevents fraud | 5 business days | Contact employee directly via phone or email to obtain full receipt details.
+
+5. Implement automated VAT validation in expense tracker | P1 | Reduces manual error and speeds up processing | 2 weeks | Develop and test validation script, integrate with expense system.
+
+6. Review and update expense policy for clear guidelines | P2 | Prevents future unclear cases | 3 weeks | Schedule review session with stakeholders and document changes.
+
+7. Train team on proper receipt and VAT requirements | P2 | Improves overall compliance | 4 weeks | Organize training sessions and provide reference materials.
+
+8. Monitor top expense categories for optimization | P2 | Identifies areas for cost saving | 1 month | Run quarterly reports and flag unusual spending patterns.
+
+Additional Priority Items:
+
+9. Set up vendor risk assessment for service continuity | P1 | Mitigates risks from suspensions | 1 week | Create checklist for vendor evaluations during onboarding.
+
+10. Automate email notifications for pending expenses | P2 | Improves communication and reduces follow-ups | 10 days | Integrate with existing expense tool or develop simple notification system.
+
+This priority plan addresses immediate risks like service interruptions while laying groundwork for long-term improvements in expense management, compliance, and efficiency. P0 focuses on critical issues threatening operations, P1 on high-impact items with timelines under a week to maintain momentum, and P2 on strategic enhancements to be tackled systematically.</textarea>
+              <div class="err-msg" id="err-priorityPlan">Minimum 800 characters required.</div>
+            </div>
+
+            <div class="full">
+              <label>Deliverable 2 — Expense Tracker Outputs (formulas + totals) *</label>
+              <div class="hint">Must include: formulas (net, VAT, issue flag), totals, top 3 categories</div>
+              <textarea name="expenseTrackerOutputs">Expense Tracker Outputs:
+
+Formulas Used:
+- Net Amount = Total Amount - VAT Amount
+- VAT Amount = Net Amount * VAT Rate
+- Total Amount = Net Amount + VAT Amount
+- Issue Flag = "VAT Missing" if VAT not calculated or receipt lacks VAT details; "Receipt Incomplete" if vendor or date missing; "OK" otherwise.
+
+Sample Expense Records:
+
+ID | Date | Category | Vendor | Net Amount (€) | VAT Rate (%) | VAT Amount (€) | Total Amount (€) | Issue Flag
+
+1 | 2024-01-15 | Travel | Hotel Conference | 1000.00 | 0.12 | 120.00 | 1120.00 | OK
+
+2 | 2024-01-16 | Meals | Team Dinner | 140.00 | 0.13 | 18.20 | 158.20 | VAT Missing
+
+3 | 2024-01-17 | Travel | Taxi Ride | 62.00 | 0.10 | 6.20 | 68.20 | Receipt Incomplete
+
+4 | 2024-01-18 | Office Supplies | SaaS Subscription | 250.00 | 0.08 | 20.00 | 270.00 | OK
+
+5 | 2024-01-19 | Meals | Client Lunch | 80.00 | 0.12 | 9.60 | 89.60 | OK
+
+6 | 2024-01-20 | Travel | Flight Tickets | 300.00 | 0.15 | 45.00 | 345.00 | OK
+
+7 | 2024-01-21 | Office Supplies | Software License | 150.00 | 0.10 | 15.00 | 165.00 | OK
+
+8 | 2024-01-22 | Meals | Team Breakfast | 50.00 | 0.13 | 6.50 | 56.50 | OK
+
+9 | 2024-01-23 | Travel | Car Rental | 200.00 | 0.12 | 24.00 | 224.00 | OK
+
+10 | 2024-01-24 | Professional Services | Consultant Fee | 500.00 | 0.08 | 40.00 | 540.00 | OK
+
+11 | 2024-01-25 | Meals | Coffee Meeting | 25.00 | 0.12 | 3.00 | 28.00 | OK
+
+12 | 2024-01-26 | Travel | Hotel Stay | 400.00 | 0.12 | 48.00 | 448.00 | OK
+
+13 | 2024-01-27 | Office Supplies | Stationery | 100.00 | 0.10 | 10.00 | 110.00 | OK
+
+14 | 2024-01-28 | Meals | Team Outing | 120.00 | 0.13 | 15.60 | 135.60 | OK
+
+15 | 2024-01-29 | Travel | Train Ticket | 75.00 | 0.08 | 6.00 | 81.00 | OK
+
+Category Totals:
+
+Travel: Net = 1000 + 62 + 300 + 200 + 400 + 75 = €2037.00; VAT = 120 + 6.2 + 45 + 24 + 48 + 6 = €249.20; Total = €2286.20
+
+Meals: Net = 140 + 80 + 50 + 25 + 120 = €415.00; VAT = 18.2 + 9.6 + 6.5 + 3 + 15.6 = €52.90; Total = €467.90
+
+Office Supplies: Net = 250 + 150 + 100 = €500.00; VAT = 20 + 15 + 10 = €45.00; Total = €545.00
+
+Professional Services: Net = 500.00; VAT = 40.00; Total = 540.00
+
+Overall Totals:
+Total Net: €2037 + 415 + 500 + 500 = €3452.00
+Total VAT: €249.20 + 52.90 + 45 + 40 = €387.10
+Total Expenses: €3839.10
+
+Issues Flagged: 2 records with issues (Team Dinner: VAT Missing; Taxi Ride: Receipt Incomplete)
+
+Top 3 Categories by Total Amount:
+1. Travel: €2286.20 (60% of total)
+2. Professional Services: €540.00 (14%)
+3. Office Supplies: €545.00 (14%)
+
+These outputs demonstrate the tracking of expenses with VAT calculations, issue flagging for compliance, and aggregation for reporting. The tracker identifies high-cost categories like Travel for budget management and flags non-compliant entries for follow-up.</textarea>
+              <div class="err-msg" id="err-expenseTrackerOutputs">Minimum 1200 characters required.</div>
+            </div>
+
+            <div>
+              <label>Deliverable 3 — Email #1: Subscription vendor (avoid suspension) *</label>
+              <textarea name="emailSubscriptionVendor">Subject: Urgent: Averting Suspension of SaaS Subscription Payment
+
+Dear Vendor Support Team,
+
+I am reaching out regarding an urgent matter with our €250/month SaaS subscription. Due to an internal finance approval delay, the payment has not been processed on time, and we have received notice that the service risks suspension if not settled immediately.
+
+To avoid any disruption to our daily operations, I kindly request that you confirm if we can expedite the payment processing or grant a brief grace period until our approval is finalized. We greatly value the service this tool provides and are committed to resolving this promptly.
+
+Attached for reference are the invoice details and our internal approval tracking number. Please let me know if additional information is needed or if there is a preferred method to expedite this.
+
+Thank you for your understanding and cooperation in this matter.
+
+Best regards,
+
+John Doe
+Operations and Finance Support Specialist
+Company Name
+Email: john.doe@example.com
+Phone: +1 234-567-8901</textarea>
+              <div class="err-msg" id="err-emailSubscriptionVendor">Minimum 350 characters required.</div>
+            </div>
+
+            <div>
+              <label>Deliverable 3 — Email #2: Hotel Vendor (VAT clarification) *</label>
+              <textarea name="emailHotelVendor">Subject: Request for VAT Breakdown on Conference Stay Invoice
+
+Dear Hotel Vendor Accounting Team,
+
+We are processing the reimbursement for the €1,200 conference stay invoice and have noted that the VAT details are not clearly specified, which is necessary for our compliance procedures.
+
+Could you please provide a detailed breakdown of the VAT, including the applicable VAT rate and the exact amount charged for VAT? This information will allow us to finalize the reimbursement accurately and promptly.
+
+Attached is a copy of the invoice for your reference. We appreciate your assistance in clarifying this matter.
+
+Thank you,
+
+Best regards,
+
+John Doe
+Operations and Finance Support Specialist
+Company Name
+Email: john.doe@example.com
+Phone: +1 234-567-8901</textarea>
+              <div class="err-msg" id="err-emailHotelVendor">Minimum 350 characters required.</div>
+            </div>
+
+            <div class="full">
+              <label>Deliverable 3 — Email #3: Internal Project Lead (15:30 deadline) *</label>
+              <textarea name="emailProjectLead"></textarea>
+              <div class="err-msg" id="err-emailProjectLead">Minimum 250 characters required.</div>
+            </div>
+
+            <div>
+              <label>Deliverable 4A — Reimbursement: Team dinner €168 (missing VAT) *</label>
+              <textarea name="reimbursementDinner"></textarea>
+              <div class="err-msg" id="err-reimbursementDinner">Minimum 450 characters required.</div>
+            </div>
+
+            <div>
+              <label>Deliverable 4B — Reimbursement: Taxi €74 (no detailed receipt) *</label>
+              <textarea name="reimbursementTaxi"></textarea>
+              <div class="err-msg" id="err-reimbursementTaxi">Minimum 450 characters required.</div>
+            </div>
+
+            <div class="full">
+              <label>Deliverable 5 — Process improvement proposal (10–15 lines) *</label>
+              <textarea name="processProposal"></textarea>
+              <div class="err-msg" id="err-processProposal">Minimum 700 characters required.</div>
+            </div>
+
+            <div class="full">
+              <label>Deliverable 6 — 7 clarifying questions *</label>
+              <div class="hint">Write numbered questions 1–7</div>
+              <textarea name="clarifyingQuestions"></textarea>
+              <div class="err-msg" id="err-clarifyingQuestions">Minimum 600 characters required.</div>
+            </div>
+
+            <div class="full">
+              <label>Deliverable 7 — Manager summary (exactly 5 lines) *</label>
+              <textarea name="managerSummary" placeholder="Line 1&#10;Line 2&#10;Line 3&#10;Line 4&#10;Line 5"></textarea>
+              <div class="err-msg" id="err-managerSummary">Must contain exactly 5 non-empty lines.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Optional Context</h2>
+          <div class="form-grid">
+            <div class="full">
+              <label>AI Usage Disclosure (optional)</label>
+              <textarea name="aiUsage" placeholder="Describe if and how you used AI..."></textarea>
+            </div>
+            <div class="full">
+              <label>Notes (optional)</label>
+              <textarea name="notes" placeholder="Any additional notes..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="btnrow">
+          <button type="submit" class="btn primary">Submit Final Evaluation</button>
+          <button type="button" class="btn secondary" id="btnSave">Save Draft</button>
+          <button type="button" class="btn secondary" id="btnClear" style="color:var(--error)">Clear Draft</button>
+        </div>
+
+        <div id="status" class="status"></div>
+      </form>
     </div>
-
-    <div class="container">
-        <div class="header">
-            <h1>🫘 Fasouli : Your personal finance tracker</h1>
-            <p>Fasouli to fasouli gemizei to sakouli</p>
-        </div>
-
-        <div class="month-nav">
-            <div class="month-controls">
-                <button class="btn btn-nav" onclick="prevMonth()">◀</button>
-                <button class="btn btn-nav" onclick="nextMonth()">▶</button>
-            </div>
-            <h2 id="monthName">October 2025</h2>
-            <button class="btn btn-primary" onclick="currentMonth()">Current Month</button>
-        </div>
-
-        <div class="stats-grid">
-            <div class="stat-card income">
-                <div class="stat-header">
-                    <span class="stat-label">Total Income</span>
-                    <div class="stat-icon icon-income">↑</div>
-                </div>
-                <div class="stat-value" id="totalIncome">€0.00</div>
-            </div>
-            <div class="stat-card expense">
-                <div class="stat-header">
-                    <span class="stat-label">Total Expenses</span>
-                    <div class="stat-icon icon-expense">↓</div>
-                </div>
-                <div class="stat-value" id="totalExpenses">€0.00</div>
-            </div>
-            <div class="stat-card profit">
-                <div class="stat-header">
-                    <span class="stat-label">Net Balance</span>
-                    <div class="stat-icon icon-profit">≈</div>
-                </div>
-                <div class="stat-value" id="profitLoss">€0.00</div>
-            </div>
-        </div>
-
-        <div class="receipt-section">
-            <h2>📸 Scan Receipt (OCR)</h2>
-            <div class="receipt-buttons">
-                <button class="btn-receipt" onclick="document.getElementById('receiptCameraInput').click()">
-                    📷 Take Photo
-                </button>
-                <button class="btn-receipt" onclick="document.getElementById('receiptFileInput').click()">
-                    📁 Upload Image
-                </button>
-            </div>
-            <input type="file" id="receiptCameraInput" accept="image/*" capture="environment" onchange="handleReceiptUpload(event)">
-            <input type="file" id="receiptFileInput" accept="image/*,application/pdf" onchange="handleReceiptUpload(event)">
-            <div class="receipt-preview hidden" id="receiptPreview">
-                <img id="receiptImage" src="" alt="Receipt preview" style="display:none;">
-                <div class="ocr-status" id="ocrStatus" style="display:none;"></div>
-                <button class="btn-clear-receipt" onclick="clearReceiptPreview()" style="display:none;" id="btnClearReceipt">Clear Receipt</button>
-            </div>
-        </div>
-
-        <div class="form-section">
-            <h2>Add New Transaction</h2>
-            <div class="form-grid">
-                <div class="form-group">
-                    <label for="type">Transaction Type</label>
-                    <select id="type" onchange="updateCategories()">
-                        <option value="income">Income</option>
-                        <option value="expense">Expense</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="description">Description</label>
-                    <input type="text" id="description" placeholder="e.g., Monthly salary" required>
-                </div>
-                <div class="form-group">
-                    <label for="amount">Amount (€)</label>
-                    <input type="number" id="amount" step="0.01" placeholder="0.00" required>
-                </div>
-                <div class="form-group">
-                    <label for="category">Category</label>
-                    <select id="category"></select>
-                </div>
-                <div class="form-group">
-                    <label for="date">Date</label>
-                    <input type="date" id="date" required>
-                </div>
-            </div>
-            <button type="button" class="btn-submit" onclick="addTransaction()">Add Transaction</button>
-        </div>
-
-        <div class="export-section">
-            <h3>📊 Export Data</h3>
-            <div class="export-grid">
-                <div class="form-group">
-                    <label for="exportStartDate">Start Date</label>
-                    <input type="date" id="exportStartDate">
-                </div>
-                <div class="form-group">
-                    <label for="exportEndDate">End Date</label>
-                    <input type="date" id="exportEndDate">
-                </div>
-            </div>
-            <button class="btn-export" onclick="exportToExcel()">Export to CSV</button>
-            <p class="export-info" id="exportInfo">Select date range to export</p>
-        </div>
-
-        <div class="transactions-section">
-            <h2>Transaction History</h2>
-            <div class="transaction-list" id="list"></div>
-        </div>
-    </div>
-
-    <script>
-        // Theme configurations
-        const themes = {
-            dashboard: {
-                '--bg-primary': '#0f172a',
-                '--bg-secondary': '#1e293b',
-                '--bg-tertiary': '#0f172a',
-                '--border-color': '#334155',
-                '--border-hover': '#475569',
-                '--text-primary': '#f8fafc',
-                '--text-secondary': '#e2e8f0',
-                '--text-muted': '#94a3b8',
-                '--text-disabled': '#64748b',
-                '--accent-income': '#10b981',
-                '--accent-expense': '#ef4444',
-                '--accent-balance': '#6366f1',
-                '--btn-primary': '#10b981',
-                '--btn-primary-hover': '#059669',
-                '--btn-secondary': '#6366f1',
-                '--btn-secondary-hover': '#4f46e5',
-                '--btn-nav': '#334155',
-                '--btn-nav-hover': '#475569',
-                '--shadow-sm': '0 1px 2px rgba(0, 0, 0, 0.05)',
-                '--shadow-md': '0 4px 6px rgba(0, 0, 0, 0.1)',
-                '--shadow-lg': '0 10px 15px rgba(0, 0, 0, 0.1)',
-                '--backdrop-blur': '0px',
-                '--border-width': '1px',
-                '--border-radius': '12px',
-                backgroundAnimation: false
-            },
-            glassmorphism: {
-                '--bg-primary': 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)',
-                '--bg-secondary': 'rgba(255, 255, 255, 0.08)',
-                '--bg-tertiary': 'rgba(255, 255, 255, 0.05)',
-                '--border-color': 'rgba(255, 255, 255, 0.18)',
-                '--border-hover': 'rgba(255, 255, 255, 0.3)',
-                '--text-primary': '#ffffff',
-                '--text-secondary': '#e2e8f0',
-                '--text-muted': '#9ca3af',
-                '--text-disabled': '#6b7280',
-                '--accent-income': '#34d399',
-                '--accent-expense': '#f87171',
-                '--accent-balance': '#c084fc',
-                '--btn-primary': '#34d399',
-                '--btn-primary-hover': '#10b981',
-                '--btn-secondary': '#c084fc',
-                '--btn-secondary-hover': '#a855f7',
-                '--btn-nav': 'rgba(192, 132, 252, 0.15)',
-                '--btn-nav-hover': 'rgba(192, 132, 252, 0.25)',
-                '--shadow-sm': '0 2px 10px rgba(0, 0, 0, 0.3)',
-                '--shadow-md': '0 4px 20px rgba(0, 0, 0, 0.3)',
-                '--shadow-lg': '0 16px 32px rgba(0, 0, 0, 0.4)',
-                '--backdrop-blur': '30px',
-                '--border-width': '1px',
-                '--border-radius': '20px',
-                backgroundAnimation: true
-            },
-            neumorphism: {
-                '--bg-primary': '#2d3748',
-                '--bg-secondary': '#2d3748',
-                '--bg-tertiary': '#2d3748',
-                '--border-color': 'transparent',
-                '--border-hover': 'transparent',
-                '--text-primary': '#f7fafc',
-                '--text-secondary': '#e2e8f0',
-                '--text-muted': '#a0aec0',
-                '--text-disabled': '#718096',
-                '--accent-income': '#48bb78',
-                '--accent-expense': '#fc8181',
-                '--accent-balance': '#9f7aea',
-                '--btn-primary': '#48bb78',
-                '--btn-primary-hover': '#38a169',
-                '--btn-secondary': '#9f7aea',
-                '--btn-secondary-hover': '#805ad5',
-                '--btn-nav': '#2d3748',
-                '--btn-nav-hover': '#2d3748',
-                '--shadow-sm': '3px 3px 6px #1a202c, -3px -3px 6px #3a4556',
-                '--shadow-md': '6px 6px 12px #1a202c, -6px -6px 12px #3a4556',
-                '--shadow-lg': '10px 10px 20px #1a202c, -10px -10px 20px #3a4556',
-                '--backdrop-blur': '0px',
-                '--border-width': '0px',
-                '--border-radius': '20px',
-                backgroundAnimation: false
-            }
-        };
-
-        function changeTheme(themeName) {
-            const theme = themes[themeName];
-            const root = document.documentElement;
-            
-            // Apply CSS variables
-            for (const [property, value] of Object.entries(theme)) {
-                if (property === 'backgroundAnimation') continue;
-                
-                if (property === '--bg-primary' && value.startsWith('linear-gradient')) {
-                    document.body.style.background = value;
-                } else {
-                    root.style.setProperty(property, value);
-                }
-            }
-
-            // Handle background animation for glassmorphism
-            if (theme.backgroundAnimation) {
-                document.body.querySelector('::before')?.style.setProperty('opacity', '1');
-                const styleSheet = document.styleSheets[0];
-                let found = false;
-                for (let i = 0; i < styleSheet.cssRules.length; i++) {
-                    if (styleSheet.cssRules[i].selectorText === 'body::before') {
-                        styleSheet.cssRules[i].style.opacity = '1';
-                        found = true;
-                        break;
-                    }
-                }
-            } else {
-                document.body.style.background = theme['--bg-primary'];
-            }
-
-            // Save theme preference
-            localStorage.setItem('fasouliTheme', themeName);
-        }
-
-        function loadTheme() {
-            const savedTheme = localStorage.getItem('fasouliTheme') || 'dashboard';
-            document.getElementById('themeSelector').value = savedTheme;
-            changeTheme(savedTheme);
-        }
-
-        // Transaction management code
-        var data = [];
-        var currentMonthDate = new Date();
-        currentMonthDate.setDate(1);
-
-        function loadData() {
-            try {
-                var saved = localStorage.getItem('fasouliData');
-                if (saved) {
-                    data = JSON.parse(saved);
-                }
-            } catch(e) {
-                console.log('Error loading:', e);
-            }
-        }
-
-        function saveData() {
-            try {
-                localStorage.setItem('fasouliData', JSON.stringify(data));
-            } catch(e) {
-                alert('Error saving data');
-            }
-        }
-
-        function formatDate(d) {
-            var date = new Date(d);
-            var m = '' + (date.getMonth() + 1);
-            var day = '' + date.getDate();
-            var y = date.getFullYear();
-            if (m.length < 2) m = '0' + m;
-            if (day.length < 2) day = '0' + day;
-            return [y, m, day].join('-');
-        }
-
-        function updateMonth() {
-            var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-            document.getElementById('monthName').textContent = months[currentMonthDate.getMonth()] + ' ' + currentMonthDate.getFullYear();
-        }
-
-        function prevMonth() {
-            currentMonthDate.setMonth(currentMonthDate.getMonth() - 1);
-            updateMonth();
-            display();
-        }
-
-        function nextMonth() {
-            currentMonthDate.setMonth(currentMonthDate.getMonth() + 1);
-            updateMonth();
-            display();
-        }
-
-        function currentMonth() {
-            currentMonthDate = new Date();
-            currentMonthDate.setDate(1);
-            updateMonth();
-            display();
-        }
-
-        function updateCategories() {
-            var type = document.getElementById('type').value;
-            var categorySelect = document.getElementById('category');
-            var incomeCategories = [
-                'Salary',
-                'Freelance',
-                'Business Income',
-                'Investment Returns',
-                'Rental Income',
-                'Gifts Received',
-                'Bonuses',
-                'Other Income'
-            ];
-            var expenseCategories = [
-                'Food & Dining',
-                'Groceries',
-                'Transportation',
-                'Utilities',
-                'Rent/Mortgage',
-                'Healthcare',
-                'Entertainment',
-                'Shopping',
-                'Education',
-                'Insurance',
-                'Travel',
-                'Subscriptions',
-                'Personal Care',
-                'Home Maintenance',
-                'Other Expense'
-            ];
-            var categories = type === 'income' ? incomeCategories : expenseCategories;
-            categorySelect.innerHTML = '';
-            for (var i = 0; i < categories.length; i++) {
-                var option = document.createElement('option');
-                option.value = categories[i];
-                option.textContent = categories[i];
-                categorySelect.appendChild(option);
-            }
-        }
-
-        function addTransaction() {
-            var type = document.getElementById('type').value;
-            var desc = document.getElementById('description').value.trim();
-            var amtInput = document.getElementById('amount').value;
-            var cat = document.getElementById('category').value;
-            var date = document.getElementById('date').value;
-
-            if (!desc) {
-                alert('Please enter a description');
-                return;
-            }
-            if (!amtInput || amtInput === '' || amtInput === '0' || parseFloat(amtInput) <= 0) {
-                alert('Please enter a valid amount greater than 0');
-                return;
-            }
-            if (!date) {
-                alert('Please select a date');
-                return;
-            }
-
-            var amt = parseFloat(amtInput);
-            var transaction = {
-                id: Date.now(),
-                type: type,
-                description: desc,
-                amount: amt,
-                category: cat,
-                date: date
-            };
-            
-            // Attach receipt image if available
-            if (currentReceiptImage) {
-                transaction.receipt = currentReceiptImage;
-            }
-            
-            data.push(transaction);
-
-            saveData();
-            display();
-
-            document.getElementById('description').value = '';
-            document.getElementById('amount').value = '';
-            document.getElementById('date').value = formatDate(new Date());
-            
-            // Clear receipt preview and reset
-            clearReceiptPreview();
-            currentReceiptImage = null;
-        }
-
-        function deleteItem(id) {
-            if (confirm('Delete this transaction?')) {
-                var newData = [];
-                for (var i = 0; i < data.length; i++) {
-                    if (data[i].id !== id) {
-                        newData.push(data[i]);
-                    }
-                }
-                data = newData;
-                saveData();
-                display();
-                
-                // Clear receipt preview when deleting
-                clearReceiptPreview();
-                currentReceiptImage = null;
-            }
-        }
-
-        function display() {
-            var start = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth(), 1);
-            var end = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() + 1, 0);
-
-            var monthData = [];
-            for (var i = 0; i < data.length; i++) {
-                var itemDate = new Date(data[i].date);
-                if (itemDate >= start && itemDate <= end) {
-                    monthData.push(data[i]);
-                }
-            }
-
-            var income = 0;
-            var expenses = 0;
-
-            for (var i = 0; i < monthData.length; i++) {
-                if (monthData[i].type === 'income') {
-                    income += monthData[i].amount;
-                } else {
-                    expenses += monthData[i].amount;
-                }
-            }
-
-            document.getElementById('totalIncome').textContent = '€' + income.toFixed(2);
-            document.getElementById('totalExpenses').textContent = '€' + expenses.toFixed(2);
-            document.getElementById('profitLoss').textContent = '€' + (income - expenses).toFixed(2);
-
-            var list = document.getElementById('list');
-            list.innerHTML = '';
-
-            if (monthData.length === 0) {
-                list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📊</div><p>No transactions this month</p></div>';
-                return;
-            }
-
-            monthData.sort(function(a, b) {
-                return new Date(b.date) - new Date(a.date);
-            });
-
-            for (var i = 0; i < monthData.length; i++) {
-                var item = monthData[i];
-                var div = document.createElement('div');
-                div.className = 'transaction-item ' + item.type;
-
-                var sign = item.type === 'income' ? '+' : '-';
-                var dateStr = new Date(item.date).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric'
-                });
-
-                // Add receipt icon next to title if available
-                var titleWithIcon = item.description;
-                if (item.receipt) {
-                    titleWithIcon += '<span class="receipt-icon" onclick="window.open(\'' + item.receipt.replace(/'/g, "\\'") + '\')" title="View receipt">📎</span>';
-                }
-                
-                var htmlContent = 
-                    '<div class="transaction-header">' +
-                        '<h4 class="transaction-title">' + titleWithIcon + '</h4>' +
-                        '<div class="transaction-amount ' + item.type + '">' + sign + '€' + item.amount.toFixed(2) + '</div>' +
-                    '</div>' +
-                    '<div class="transaction-details">' + item.category + ' • ' + dateStr + '</div>' +
-                    '<button class="btn-delete" onclick="deleteItem(' + item.id + ')">Delete</button>';
-                
-                div.innerHTML = htmlContent;
-
-                list.appendChild(div);
-            }
-        }
-
-        function setExportDates() {
-            var start = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth(), 1);
-            var end = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() + 1, 0);
-
-            document.getElementById('exportStartDate').value = formatDate(start);
-            document.getElementById('exportEndDate').value = formatDate(end);
-            updateExportInfo();
-        }
-
-        function updateExportInfo() {
-            var startDate = document.getElementById('exportStartDate').value;
-            var endDate = document.getElementById('exportEndDate').value;
-
-            if (!startDate || !endDate) {
-                document.getElementById('exportInfo').textContent = 'Select date range to export';
-                return;
-            }
-
-            var start = new Date(startDate);
-            var end = new Date(endDate);
-
-            var count = 0;
-            for (var i = 0; i < data.length; i++) {
-                var itemDate = new Date(data[i].date);
-                if (itemDate >= start && itemDate <= end) {
-                    count++;
-                }
-            }
-
-            document.getElementById('exportInfo').textContent = count + ' transactions in selected range';
-        }
-
-        function exportToExcel() {
-            var startDate = document.getElementById('exportStartDate').value;
-            var endDate = document.getElementById('exportEndDate').value;
-
-            if (!startDate || !endDate) {
-                alert('Please select start and end dates');
-                return;
-            }
-
-            var start = new Date(startDate);
-            var end = new Date(endDate);
-
-            if (start > end) {
-                alert('Start date must be before end date');
-                return;
-            }
-
-            var rangeData = [];
-            for (var i = 0; i < data.length; i++) {
-                var itemDate = new Date(data[i].date);
-                if (itemDate >= start && itemDate <= end) {
-                    rangeData.push(data[i]);
-                }
-            }
-
-            if (rangeData.length === 0) {
-                alert('No transactions found in selected date range');
-                return;
-            }
-
-            rangeData.sort(function(a, b) {
-                return new Date(a.date) - new Date(b.date);
-            });
-
-            var csv = 'Date,Type,Category,Description,Amount\n';
-            for (var i = 0; i < rangeData.length; i++) {
-                var item = rangeData[i];
-                var dateStr = item.date;
-                var type = item.type === 'income' ? 'Income' : 'Expense';
-                var desc = '"' + item.description.replace(/"/g, '""') + '"';
-                var amount = item.amount.toFixed(2);
-                csv += dateStr + ',' + type + ',' + item.category + ',' + desc + ',' + amount + '\n';
-            }
-
-            var income = 0;
-            var expenses = 0;
-            for (var i = 0; i < rangeData.length; i++) {
-                if (rangeData[i].type === 'income') {
-                    income += rangeData[i].amount;
-                } else {
-                    expenses += rangeData[i].amount;
-                }
-            }
-
-            csv += '\n';
-            csv += 'SUMMARY\n';
-            csv += 'Total Income,,,,€' + income.toFixed(2) + '\n';
-            csv += 'Total Expenses,,,,€' + expenses.toFixed(2) + '\n';
-            csv += 'Net Balance,,,,€' + (income - expenses).toFixed(2) + '\n';
-
-            var filename = 'Fasouli_' + startDate + '_to_' + endDate + '.csv';
-            var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            var link = document.createElement('a');
-            if (link.download !== undefined) {
-                var url = URL.createObjectURL(blob);
-                link.setAttribute('href', url);
-                link.setAttribute('download', filename);
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            }
-
-            alert('Exported ' + rangeData.length + ' transactions from ' + startDate + ' to ' + endDate);
-        }
-
-        // Configure PDF.js worker
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
-        // Global variable to store current receipt image
-        var currentReceiptImage = null;
-
-        // Receipt OCR Functions
-        function handleReceiptUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            console.log('File selected:', file.name, 'Type:', file.type);
-
-            // Get elements
-            const previewDiv = document.getElementById('receiptPreview');
-            const statusEl = document.getElementById('ocrStatus');
-            const imgElement = document.getElementById('receiptImage');
-            
-            // Show preview container
-            previewDiv.classList.remove('hidden');
-            imgElement.style.display = 'block';
-            statusEl.style.display = 'block';
-            
-            statusEl.className = 'ocr-status processing';
-
-            // Check if it's a PDF
-            if (file.type === 'application/pdf') {
-                statusEl.textContent = '📄 Processing PDF...';
-                convertPDFToImage(file, imgElement, statusEl);
-            } else {
-                // Handle image files
-                statusEl.textContent = '📤 Loading image...';
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    console.log('Image loaded into memory');
-                    currentReceiptImage = e.target.result; // Store for attaching to transaction
-                    imgElement.src = e.target.result;
-                    statusEl.textContent = '✅ Image loaded! Starting OCR...';
-                    
-                    // Small delay to ensure image renders
-                    setTimeout(function() {
-                        processReceiptOCR(e.target.result);
-                    }, 100);
-                };
-                
-                reader.onerror = function(error) {
-                    console.error('FileReader error:', error);
-                    statusEl.className = 'ocr-status error';
-                    statusEl.textContent = '❌ Failed to load image';
-                };
-                
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function convertPDFToImage(pdfFile, imgElement, statusEl) {
-            const reader = new FileReader();
-            
-            reader.onload = function(e) {
-                const typedarray = new Uint8Array(e.target.result);
-                
-                statusEl.textContent = '📄 Loading PDF...';
-                
-                pdfjsLib.getDocument(typedarray).promise.then(function(pdf) {
-                    console.log('PDF loaded, pages:', pdf.numPages);
-                    statusEl.textContent = '📄 Rendering first page...';
-                    
-                    // Get first page
-                    pdf.getPage(1).then(function(page) {
-                        const scale = 2.0; // Higher scale for better OCR
-                        const viewport = page.getViewport({ scale: scale });
-                        
-                        // Create canvas
-                        const canvas = document.createElement('canvas');
-                        const context = canvas.getContext('2d');
-                        canvas.height = viewport.height;
-                        canvas.width = viewport.width;
-                        
-                        // Render PDF page to canvas
-                        const renderContext = {
-                            canvasContext: context,
-                            viewport: viewport
-                        };
-                        
-                        page.render(renderContext).promise.then(function() {
-                            // Convert canvas to image
-                            const imageData = canvas.toDataURL('image/png');
-                            currentReceiptImage = imageData; // Store for attaching to transaction
-                            imgElement.src = imageData;
-                            
-                            statusEl.textContent = '✅ PDF converted! Starting OCR...';
-                            console.log('PDF converted to image');
-                            
-                            // Process with OCR
-                            setTimeout(function() {
-                                processReceiptOCR(imageData);
-                            }, 100);
-                        });
-                    });
-                }).catch(function(error) {
-                    console.error('PDF loading error:', error);
-                    statusEl.className = 'ocr-status error';
-                    statusEl.textContent = '❌ Failed to load PDF: ' + error.message;
-                });
-            };
-            
-            reader.onerror = function(error) {
-                console.error('FileReader error:', error);
-                statusEl.className = 'ocr-status error';
-                statusEl.textContent = '❌ Failed to read PDF file';
-            };
-            
-            reader.readAsArrayBuffer(pdfFile);
-        }
-
-        function processReceiptOCR(imageData) {
-            const statusEl = document.getElementById('ocrStatus');
-            statusEl.className = 'ocr-status processing';
-            statusEl.textContent = '🔄 Initializing OCR (Greek + English)...';
-
-            // Use both Greek and English for better recognition
-            Tesseract.recognize(
-                imageData,
-                'ell+eng', // Greek + English
-                {
-                    logger: function(m) {
-                        console.log(m);
-                        if (m.status === 'loading tesseract core') {
-                            statusEl.textContent = '⏳ Loading OCR engine...';
-                        } else if (m.status === 'initializing tesseract') {
-                            statusEl.textContent = '⚙️ Initializing...';
-                        } else if (m.status === 'loading language traineddata') {
-                            statusEl.textContent = '📚 Loading language data...';
-                        } else if (m.status === 'initializing api') {
-                            statusEl.textContent = '🔧 Starting OCR...';
-                        } else if (m.status === 'recognizing text') {
-                            const progress = Math.round(m.progress * 100);
-                            statusEl.textContent = `🔄 Reading text: ${progress}%`;
-                        }
-                    }
-                }
-            ).then(function(result) {
-                const text = result.data.text;
-                console.log('OCR Full Result:', text);
-                console.log('Confidence:', result.data.confidence);
-                
-                // Extract information from text
-                const extractedData = extractReceiptData(text);
-                
-                console.log('Extracted Data:', extractedData);
-                
-                if (extractedData.amount || extractedData.vendor || extractedData.date) {
-                    prefillForm(extractedData);
-                    statusEl.className = 'ocr-status success';
-                    let message = '✅ Receipt processed! ';
-                    if (extractedData.amount) message += 'Amount: €' + extractedData.amount.toFixed(2) + ' ';
-                    if (extractedData.vendor) message += 'Vendor: ' + extractedData.vendor + ' ';
-                    if (extractedData.date) message += 'Date: ' + extractedData.date;
-                    statusEl.textContent = message;
-                } else {
-                    statusEl.className = 'ocr-status error';
-                    statusEl.textContent = '⚠️ Text extracted but no data found. Check console for details. Please fill manually.';
-                    console.log('Raw OCR text:', text);
-                }
-                
-                // Show Clear Receipt button after processing
-                document.getElementById('btnClearReceipt').style.display = 'block';
-            }).catch(function(error) {
-                console.error('OCR Error:', error);
-                statusEl.className = 'ocr-status error';
-                statusEl.textContent = '❌ OCR failed: ' + error.message + '. Please try another image.';
-            });
-        }
-
-        function extractReceiptData(text) {
-            const data = {
-                amount: null,
-                vendor: null,
-                date: null
-            };
-
-            // Extract amount - prioritize Greek total keywords first, then English, then generic
-            const amountPatterns = [
-                // Greek patterns (highest priority)
-                /πληρωτέο\s*ποσ[όo][:\s]*€?\s*(\d+[.,]\d{2})/i,
-                /πληρωτεο\s*ποσο[:\s]*€?\s*(\d+[.,]\d{2})/i,
-                /συνολο[:\s]*€?\s*(\d+[.,]\d{2})/i,
-                /σύνολο[:\s]*€?\s*(\d+[.,]\d{2})/i,
-                /τελικ[όo]\s*ποσ[όo][:\s]*€?\s*(\d+[.,]\d{2})/i,
-                /τελικο\s*ποσο[:\s]*€?\s*(\d+[.,]\d{2})/i,
-                /σύνολο\s*πληρωμής[:\s]*€?\s*(\d+[.,]\d{2})/i,
-                /συνολο\s*πληρωμης[:\s]*€?\s*(\d+[.,]\d{2})/i,
-                /καθαρ[ήh]\s*αξ[ίi]α[:\s]*€?\s*(\d+[.,]\d{2})/i,
-                /καθαρη\s*αξια[:\s]*€?\s*(\d+[.,]\d{2})/i,
-                
-                // English patterns (medium priority)
-                /total[:\s]*€?\s*(\d+[.,]\d{2})/i,
-                /amount\s*due[:\s]*€?\s*(\d+[.,]\d{2})/i,
-                /grand\s*total[:\s]*€?\s*(\d+[.,]\d{2})/i,
-                /amount[:\s]*€?\s*(\d+[.,]\d{2})/i,
-                /sum[:\s]*€?\s*(\d+[.,]\d{2})/i,
-                /balance[:\s]*€?\s*(\d+[.,]\d{2})/i,
-                
-                // Generic patterns (lowest priority - last resort)
-                /€\s*(\d+[.,]\d{2})/,
-                /(\d+[.,]\d{2})\s*€/,
-                /(\d+[.,]\d{2})/
-            ];
-
-            for (const pattern of amountPatterns) {
-                const match = text.match(pattern);
-                if (match) {
-                    data.amount = parseFloat(match[1].replace(',', '.'));
-                    console.log('Amount found with pattern:', pattern, '→', data.amount);
-                    break;
-                }
-            }
-
-            // Extract date - look for date patterns
-            const datePatterns = [
-                /(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})/,
-                /(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})/,
-                /date[:\s]*(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})/i
-            ];
-
-            for (const pattern of datePatterns) {
-                const match = text.match(pattern);
-                if (match) {
-                    let day, month, year;
-                    if (match[0].startsWith('date') || match[1].length === 4) {
-                        year = match[1].length === 4 ? match[1] : match[3];
-                        month = match[2];
-                        day = match[3].length === 4 ? match[2] : match[1];
-                    } else {
-                        day = match[1];
-                        month = match[2];
-                        year = match[3];
-                    }
-                    
-                    if (year.length === 2) {
-                        year = '20' + year;
-                    }
-                    
-                    data.date = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-                    break;
-                }
-            }
-
-            // Extract vendor - usually in first few lines
-            const lines = text.split('\n').filter(line => line.trim().length > 0);
-            if (lines.length > 0) {
-                // Try to find vendor name (usually first non-empty line or line with company keywords)
-                for (let i = 0; i < Math.min(5, lines.length); i++) {
-                    const line = lines[i].trim();
-                    // Skip lines with only numbers or dates
-                    if (!/^\d+/.test(line) && line.length > 2 && line.length < 50) {
-                        data.vendor = line;
-                        break;
-                    }
-                }
-            }
-
-            return data;
-        }
-
-        function clearReceiptPreviewOnly() {
-            // Only clear the visual preview, keep currentReceiptImage for transaction attachment
-            const previewDiv = document.getElementById('receiptPreview');
-            const imgElement = document.getElementById('receiptImage');
-            const statusEl = document.getElementById('ocrStatus');
-            
-            // Hide preview
-            previewDiv.classList.add('hidden');
-            imgElement.style.display = 'none';
-            statusEl.style.display = 'none';
-            
-            // Clear visual elements but DON'T clear currentReceiptImage
-            imgElement.src = '';
-            statusEl.textContent = '';
-            
-            // Reset file inputs
-            document.getElementById('receiptCameraInput').value = '';
-            document.getElementById('receiptFileInput').value = '';
-            
-            console.log('Receipt preview cleared (image kept for transaction)');
-        }
-
-        function clearReceiptPreview() {
-            // Clear both preview AND currentReceiptImage
-            const previewDiv = document.getElementById('receiptPreview');
-            const imgElement = document.getElementById('receiptImage');
-            const statusEl = document.getElementById('ocrStatus');
-            const btnClear = document.getElementById('btnClearReceipt');
-            
-            // Hide everything
-            previewDiv.classList.add('hidden');
-            imgElement.style.display = 'none';
-            statusEl.style.display = 'none';
-            btnClear.style.display = 'none';
-            
-            // Clear data
-            imgElement.src = '';
-            statusEl.textContent = '';
-            currentReceiptImage = null;
-            
-            // Reset file inputs
-            document.getElementById('receiptCameraInput').value = '';
-            document.getElementById('receiptFileInput').value = '';
-            
-            console.log('Receipt preview and image data cleared completely');
-        }
-
-        function prefillForm(extractedData) {
-            // Set transaction type to expense (receipts are typically expenses)
-            document.getElementById('type').value = 'expense';
-            updateCategories();
-
-            // Pre-fill amount
-            if (extractedData.amount) {
-                document.getElementById('amount').value = extractedData.amount.toFixed(2);
-            }
-
-            // Pre-fill description with vendor name
-            if (extractedData.vendor) {
-                document.getElementById('description').value = extractedData.vendor;
-            }
-
-            // Pre-fill date
-            if (extractedData.date) {
-                // Validate date before setting
-                const dateObj = new Date(extractedData.date);
-                if (!isNaN(dateObj.getTime())) {
-                    document.getElementById('date').value = extractedData.date;
-                }
-            }
-
-            // Try to auto-select appropriate category based on vendor name
-            if (extractedData.vendor) {
-                const vendor = extractedData.vendor.toLowerCase();
-                let suggestedCategory = 'Other Expense';
-
-                if (vendor.includes('market') || vendor.includes('grocery') || vendor.includes('super')) {
-                    suggestedCategory = 'Groceries';
-                } else if (vendor.includes('restaurant') || vendor.includes('cafe') || vendor.includes('pizza') || vendor.includes('food')) {
-                    suggestedCategory = 'Food & Dining';
-                } else if (vendor.includes('gas') || vendor.includes('fuel') || vendor.includes('petrol')) {
-                    suggestedCategory = 'Transportation';
-                } else if (vendor.includes('pharmacy') || vendor.includes('hospital') || vendor.includes('clinic')) {
-                    suggestedCategory = 'Healthcare';
-                } else if (vendor.includes('electric') || vendor.includes('water') || vendor.includes('utility')) {
-                    suggestedCategory = 'Utilities';
-                }
-
-                document.getElementById('category').value = suggestedCategory;
-            }
-
-            // Scroll to form
-            document.querySelector('.form-section').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('exportStartDate').addEventListener('change', updateExportInfo);
-            document.getElementById('exportEndDate').addEventListener('change', updateExportInfo);
-            loadTheme();
+  </div>
+
+  <script>
+    const ENDPOINT = "PASTE_YOUR_APPS_SCRIPT_URL_HERE";
+    const form = document.getElementById('evalForm');
+    const statusBox = document.getElementById('status');
+    const STORAGE_KEY = 'reborrn_eval_draft';
+
+    const MIN_RULES = {
+      fullName: 3,
+      priorityPlan: 800,
+      expenseTrackerOutputs: 1200,
+      emailSubscriptionVendor: 350,
+      emailHotelVendor: 350,
+      emailProjectLead: 250,
+      reimbursementDinner: 450,
+      reimbursementTaxi: 450,
+      processProposal: 700,
+      clarifyingQuestions: 600
+    };
+
+    // --- Autosave Logic ---
+    const saveToLocal = () => {
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    };
+
+    const loadFromLocal = () => {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const data = JSON.parse(saved);
+        Object.keys(data).forEach(key => {
+          if (form[key]) form[key].value = data[key];
         });
+      }
+    };
 
-        loadData();
-        document.getElementById('date').value = formatDate(new Date());
-        updateMonth();
-        updateCategories();
-        display();
-        setExportDates();
-    </script>
+    form.addEventListener('input', saveToLocal);
+
+    document.getElementById('btnSave').onclick = () => {
+      saveToLocal();
+      showStatus('Draft saved successfully!', 'ok');
+    };
+
+    document.getElementById('btnClear').onclick = () => {
+      if(confirm('Are you sure you want to clear your draft?')) {
+        localStorage.removeItem(STORAGE_KEY);
+        form.reset();
+        showStatus('Draft cleared.', 'ok');
+      }
+    };
+
+    // --- Validation Logic ---
+    const validate = () => {
+      let isValid = true;
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+
+      // Standard Min Length Checks
+      Object.keys(MIN_RULES).forEach(key => {
+        const field = form[key];
+        const error = document.getElementById('err-' + key);
+        if (data[key].trim().length < MIN_RULES[key]) {
+          error.style.display = 'block';
+          isValid = false;
+        } else {
+          error.style.display = 'none';
+        }
+      });
+
+      // Email Format
+      if (!/^\S+@\S+\.\S+$/.test(data.email)) {
+        document.getElementById('err-email').style.display = 'block';
+        isValid = false;
+      }
+
+      // Manager Summary: exactly 5 non-empty lines
+      const summaryLines = data.managerSummary.split('\n').filter(line => line.trim() !== "");
+      const summaryError = document.getElementById('err-managerSummary');
+      if (summaryLines.length !== 5) {
+        summaryError.style.display = 'block';
+        isValid = false;
+      } else {
+        summaryError.style.display = 'none';
+      }
+
+      return isValid;
+    };
+
+    const showStatus = (msg, type) => {
+      statusBox.textContent = msg;
+      statusBox.className = 'status ' + type;
+      statusBox.style.display = 'block';
+      if(type === 'ok') setTimeout(() => { statusBox.style.display = 'none'; }, 4000);
+    };
+
+    // --- Submission ---
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      if (!validate()) {
+        showStatus('Please correct the errors before submitting.', 'err');
+        return;
+      }
+
+      showStatus('Submitting final evaluation...', 'ok');
+
+      const formData = new FormData(form);
+      const payload = Object.fromEntries(formData.entries());
+
+      try {
+        const res = await fetch(ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+        const result = await res.json();
+        
+        if (result.ok) {
+          localStorage.removeItem(STORAGE_KEY);
+          form.reset();
+          showStatus('Success! Your evaluation has been submitted.', 'ok');
+          window.scrollTo(0, 0);
+        } else {
+          showStatus('Error: ' + result.error, 'err');
+        }
+      } catch (err) {
+        showStatus('Network error. Please try again.', 'err');
+      }
+    };
+
+    window.onload = loadFromLocal;
+  </script>
 </body>
 </html>
